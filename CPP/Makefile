@@ -1,4 +1,4 @@
 MAKE_DIRS= libIOInterface \
 		   libUtils
 
-include ../makefile.include
+include ../../makefile.include
