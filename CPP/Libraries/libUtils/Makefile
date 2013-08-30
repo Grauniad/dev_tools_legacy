@@ -4,4 +4,4 @@ SOURCES=$(shell echo *.cpp)
 TARGET_LIB=libUtils
 CPP_TAGS_FILE=libUtils-c++.tags
 
-include ../../../makefile.include
+include ../makefiles_libaries.include
