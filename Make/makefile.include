@@ -228,8 +228,8 @@ ifdef BUILD_TIME_TESTS
    TESTS_TO_BUILD=$(addprefix $(EXPORT_TESTS_TO),$(BUILD_TIME_TESTS))
    TESTS_TO_RUN=$(TESTS_TO_BUILD)
    FILES_TO_CLEAN+=$(TESTS_TO_BUILD)
-   FILES_TO_CLEAN+=$(shell ls *.gcda)
-   FILES_TO_CLEAN+=$(shell ls *.gcno)
+   FILES_TO_CLEAN+=$(shell ls *.gcda 2> /dev/null)
+   FILES_TO_CLEAN+=$(shell ls *.gcno 2> /dev/null)
 endif
 
 ifdef LINKED_LIBS
