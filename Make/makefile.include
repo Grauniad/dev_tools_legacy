@@ -4,7 +4,7 @@
  
 # This project requires the C++11 standard
 ADDITIONAL_INCLUDE_FLAGS=
-TEST_CPP_FLAGS=
+ADDITIONAL_TEST_CPP_FLAGS=
 
 #Define the base directories
 ifndef PROJECT_ROOT_DIR
@@ -118,6 +118,11 @@ endif
 INCLUDE_FLAGS=-I$(EXPORT_INCLUDES_DIR)
 INCLUDE_FLAGS+=$(ADDITIONAL_INCLUDE_FLAGS)
 
+# Expose libDefer to the test framework
+# Make the defer header available for use in test scripts
+TEST_CPP_FLAGS=-I$(LINKER_DIR)Libraries/libDefer/
+TEST_CPP_FLAGS+=$(ADDITIONAL_TEST_CPP_FLAGS)
+
 
 ifdef CPP_FLAGS
     CPP_FLAGS+=$(INCLUDE_FLAGS)
@@ -125,9 +130,12 @@ else
     CPP_FLAGS=$(INCLUDE_FLAGS)
 endif
 
+ifndef CPP_PROFILE_FLAGS
+    CPP_PROFILE_FLAGS=-pg -O2 -march=native
+endif
 
 ifeq ($(findstring profile,$(MAKECMDGOALS)),profile)
-   CPP_FLAGS+=-pg -D__PROFILE__TESTS -D__PROFILE_CLOCK_SECS__=$(PROFILE_SECS) -O2 -march=native
+   CPP_FLAGS+=-D__PROFILE__TESTS -D__PROFILE_CLOCK_SECS__=$(PROFILE_SECS) $(CPP_PROFILE_FLAGS)
    ifndef PROFILE_SECS
       PROFILE_SECS=5
    endif
@@ -400,12 +408,14 @@ usage:
 	@echo "    <$(CPP_TAGS_FILE)>"
 	@echo ""
 	@echo "        Compiler Options"
-	@echo "ADDITIONAL_INCLUDE_FLAGS: ()        Add extra inclue directories                               <$(ADDITIONAL_INCLUDE_FLAGS)>"
-	@echo "CPPSTD:                   (gnu++98) SetSet the C++ standard to be used by g++, e.g             <$(CPPSTD)>"
-	@echo "CPP_FLAGS:                ()        Flags passed to g++                                        <$(CPP_FLAGS)>" 
-	@echo "DEBUG_ON:                 (YES)     To disable debug symbols: export DEBUG_ON=FALSE            <$(DEBUG_ON)>"
-	@echo "USE_CPP11:                (NO)      To use the CPP11 std, set USE_CPP11=YES                    <$(USE_CPP11)>"
-	@echo "FATAL_WARNINGS            (YES)     Set to NO to prevent compiler warnings breaking the build  <$(FATAL_WARNINGS)>"
+	@echo "ADDITIONAL_INCLUDE_FLAGS:  ()        Add extra inclue directories                               <$(ADDITIONAL_INCLUDE_FLAGS)>"
+	@echo "ADDITIONAL_TEST_CPP_FLAGS: ()        Add extra inclue directories                               <$(ADDITIONAL_INCLUDE_FLAGS)>"
+	@echo "CPPSTD:                    (gnu++98) SetSet the C++ standard to be used by g++, e.g             <$(CPPSTD)>"
+	@echo "CPP_FLAGS:                 ()        Flags passed to g++                                        <$(CPP_FLAGS)>" 
+	@echo "CPP_PROFILE_FLAGS          (-pg -O2 -march=native) CPP Flags used when profiling.               <$(CPP_PROFILE_FLAGS)>"
+	@echo "DEBUG_ON:                  (YES)     To disable debug symbols: export DEBUG_ON=FALSE            <$(DEBUG_ON)>"
+	@echo "FATAL_WARNINGS             (YES)     Set to NO to prevent compiler warnings breaking the build  <$(FATAL_WARNINGS)>"
+	@echo "USE_CPP11:                 (NO)      To use the CPP11 std, set USE_CPP11=YES                    <$(USE_CPP11)>"
 	@echo ""
 	@echo "        CTAGS"
 	@echo "CTAGS:                    (ctags)   Set the ctags executable <$(CTAGS)>"

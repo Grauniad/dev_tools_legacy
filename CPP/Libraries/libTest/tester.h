@@ -45,6 +45,9 @@ public:
         // Drop the manipulation, and just return the stream
         return *this;
     }
+
+    void WriteLog(const string& descr, const Time& t) {
+    }
 };
 
 class DefaultTestLogger: LogDevice {

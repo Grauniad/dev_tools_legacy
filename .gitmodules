@@ -1,0 +1,3 @@
+[submodule "CPP/Libraries/libDefer"]
+	path = CPP/Libraries/libDefer
+	url = git@github.com:Grauniad/CPP-Defer.git
