@@ -1,3 +1,6 @@
+#ifndef DEV_TOOLS_CSV_H
+#define DEV_TOOLS_CSV_H
+
 #include<boost/tokenizer.hpp>
 #include <string>
 #include <sstream>
@@ -225,3 +228,7 @@ public:
         data.emplace_back(atol(token.c_str()));
     }
 };
+
+#include "csv.hpp"
+
+#endif
