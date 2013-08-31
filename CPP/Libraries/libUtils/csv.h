@@ -11,7 +11,7 @@
 #include "binaryWriter.h"
 #include <type_traits>
 
-#define TYPE(i) CSV<Types...>::ColTypes<i>
+#define TYPE(i) CSV<Types...>::ColTypes::type<i>
 #define THIS CSV<Types...>
 
 typedef boost::tokenizer<boost::escaped_list_separator<char> > Tokeniser;
@@ -34,9 +34,11 @@ private:
 public:
     // Type Info
     using rowType = std::tuple<Types&...>;
-    template<std::size_t N>
     struct ColTypes {
-        using type = typename std::tuple_element<N, colsType>;
+        template<std::size_t N>
+        using type = typename std::tuple_element<N, colsType>::type::DataType;
+        template<std::size_t N>
+        using colType = typename std::tuple_element<N, colsType>::type;
     };
     static const int ncols = sizeof...(Types);
     int Rows();
@@ -48,29 +50,46 @@ public:
     CSV(CSV&& src) {
         std::swap(this->columns, src.columns);
     }
+    CSV& operator=(CSV&& src) {
+        std::swap(this->columns, src.columns);
+        return *this;
+    }
+
+    // Copy constructor
+    CSV(const CSV& rhs): columns(rhs.columns){}
+    CSV& operator=(CSV& rhs) {
+        this->columns = rhs.columns;
+        return *this;
+    }
 
     // Get a Row
     rowType GetRow(int i);
     void GetRow(int i, Types&...args);
+
+    void Reserve(int rows);
 
     // Remove a Row
     void RemoveRow(int i);
 
     // Add a Row
     void AddRow(Types&&...args);
+    //TODO: Add row at
+    //TODO: Replace row at
+    //TODO: take a row as an argument
 
     // Print a Row
     std::string PrintRow(int i);
 
     // Get a Column
     template <int i> 
-    inline CSV_Column<ColTypes<i> >& GetColumn() { 
+    inline ColTypes::colType<i>&
+    GetColumn() { 
         return std::get<i>(columns);
     }
 
     // Get a cell
     template<int col>
-    inline ColTypes<col>& GetCell(int row) {
+    inline TYPE(col)& GetCell(int row) {
         return std::get<col>(columns)[row];
     }
 
@@ -157,12 +176,28 @@ private:
     inline typename std::enable_if< index==0,void>::type
     RemoveCell(int row);
     //*********************************
+      
+    //*********************************
+    // template to reserve space
+    //*********************************
+    template< int index>
+    inline typename std::enable_if< index!=0,void>::type
+    ReserveColumn(int rows);
+
+    template< int index>
+    inline typename std::enable_if< index==0,void>::type
+    ReserveColumn(int rows);
+
+    //*********************************
 };
 
 template<class T>
 class CSV_Column_Common {
 public:
     typedef T DataType;
+    // CopyConstruct
+    CSV_Column_Common() = default;
+    CSV_Column_Common(const CSV_Column_Common& rhs): data(rhs.data){}
 
     // Raw data acccess
     T* array() { return data.data(); }
@@ -183,6 +218,10 @@ public:
 
     int size() {
         return data.size();
+    }
+
+    void reserve(int rows) {
+        data.reserve(rows);
     }
 
     //

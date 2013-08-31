@@ -73,6 +73,13 @@ LogDevice& LogFactory::CLOG() {
     return _clog;
 }
 
+std::stringstream& LogFactory::Buf() {
+    static std::stringstream buf;
+    buf.str("");
+    buf.clear();
+    return buf;
+}
+
 /*
  * Logger Implementation
  */

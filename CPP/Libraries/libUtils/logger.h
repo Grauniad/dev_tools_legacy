@@ -34,9 +34,9 @@ class Time;
 #define LOG(level, text) if ( Logger::Instance().LogEnabled(level) ) { Logger::Instance().LogMessage(text, level); }
 #define LOG_FROM(level, context, text) if ( Logger::Instance().LogEnabled(level) ) { Logger::Instance().LogMessage(text, level, context); }
 
-#define SPRINT(text) if ( Logger::Instance().LogEnabled(LOG_DEFAULT) ) { std::stringstream s; s << text; Logger::Instance().LogMessage(s.str(), LOG_DEFAULT); }
-#define SLOG(level, text) if ( Logger::Instance().LogEnabled(level) ) { std::stringstream s; s << text; Logger::Instance().LogMessage(s.str(), level); }
-#define SLOG_FROM(level, context, text) if ( Logger::Instance().LogEnabled(level) ) { std::stringstream s; s << text; Logger::Instance().LogMessage(s.str(), level, context); }
+#define SPRINT(text) if ( Logger::Instance().LogEnabled(LOG_DEFAULT) ) { std::stringstream& s = LogFactory::Buf(); s << text; Logger::Instance().LogMessage(s.str(), LOG_DEFAULT); }
+#define SLOG(level, text) if ( Logger::Instance().LogEnabled(level) ) { std::stringstream& s = LogFactory::Buf(); s << text; Logger::Instance().LogMessage(s.str(), level); }
+#define SLOG_FROM(level, context, text) if ( Logger::Instance().LogEnabled(level) ) { std::stringstream& s = LogFactory::Buf(); s << text; Logger::Instance().LogMessage(s.str(), level, context); }
 
 // Valid Log Levels
 using namespace std; 
@@ -95,6 +95,7 @@ public:
     static LogDevice& COUT();
     static LogDevice& CERR();
     static LogDevice& CLOG();
+    static std::stringstream& Buf();
 };
 
 class GenericFormatLogger { 

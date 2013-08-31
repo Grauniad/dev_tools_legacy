@@ -159,7 +159,7 @@ template< int index>
 inline typename std::enable_if< index!=0,void>::type
 CSV<Types...>::RemoveCell(int row) {
     std::get<index>(this->columns).remove(row);
-    this->GetCell<index -1>(row);
+    this->RemoveCell<index -1>(row);
 }
 
 template<class...Types>
@@ -167,6 +167,30 @@ template< int index>
 inline typename std::enable_if< index==0,void>::type
 CSV<Types...>::RemoveCell(int row) {
     std::get<index>(this->columns).remove(row);
+}
+//*********************************
+  
+//*********************************
+// template to remove a row
+//*********************************
+template<class...Types>
+void CSV<Types...>::Reserve(int rows) {
+    this->ReserveColumn<ncols-1>(rows);
+}
+
+template<class...Types>
+template< int index>
+inline typename std::enable_if< index!=0,void>::type
+CSV<Types...>::ReserveColumn(int rows) {
+    std::get<index>(this->columns).reserve(rows);
+    this->ReserveColumn<index -1>(rows);
+}
+
+template<class...Types>
+template< int index>
+inline typename std::enable_if< index==0,void>::type
+CSV<Types...>::ReserveColumn(int rows) {
+    std::get<index>(this->columns).reserve(rows);
 }
 //*********************************
 
