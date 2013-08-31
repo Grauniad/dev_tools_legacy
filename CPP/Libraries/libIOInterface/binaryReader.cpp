@@ -1,5 +1,6 @@
 #include <string>
 #include "binaryReader.h"
+#include "logger.h"
 
 using namespace std;
 
@@ -47,8 +48,6 @@ BinaryReader BinaryReader::Find(unsigned char c) const {
     BinaryReader loc(file,file.Next(offset, c));
     if ( loc < Begin() )
         return Begin();
-    else if ( loc > End() )
-        return End();
     else
         return loc;
 }
@@ -57,8 +56,6 @@ BinaryReader BinaryReader::RFind(unsigned char c) const {
     BinaryReader loc(file,file.Last(offset, c));
     if ( loc < Begin() )
         return Begin();
-    else if ( loc > End() )
-        return End();
     else
         return loc;
 }
@@ -111,6 +108,7 @@ void BinaryReader::AppendString(string& dest) const{
 string BinaryReader::ReadString() const {
     string s;
     file.ReadString(offset,s);
+    SLOG ( LOG_VERY_VERBOSE, "Binary Reader read a string from offset, " << offset << " - >" << s << "<")
     return s;
 }
 

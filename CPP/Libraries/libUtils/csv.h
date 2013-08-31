@@ -10,6 +10,7 @@
 #include "binaryReader.h"
 #include "binaryWriter.h"
 #include <type_traits>
+#include <iomanip>
 
 #define TYPE(i) CSV<Types...>::ColTypes::type<i>
 #define THIS CSV<Types...>
@@ -30,10 +31,10 @@ template<class...Types>
 class CSV {
 private:
     using colsType = std::tuple<CSV_Column<Types>...>;
-    using forwardRowType = std::tuple<Types&&...>;
 public:
     // Type Info
     using rowType = std::tuple<Types&...>;
+    using forwardRowType = std::tuple<Types&&...>;
     struct ColTypes {
         template<std::size_t N>
         using type = typename std::tuple_element<N, colsType>::type::DataType;
@@ -73,9 +74,9 @@ public:
 
     // Add a Row
     void AddRow(Types&&...args);
+    void AddRow(rowType&& row);
     //TODO: Add row at
     //TODO: Replace row at
-    //TODO: take a row as an argument
 
     // Print a Row
     std::string PrintRow(int i);
@@ -128,6 +129,18 @@ private:
     template<int index>
     inline typename std::enable_if< index==0,void>::type
     AddCell(forwardRowType&& row);
+    //*********************************
+      
+    //*********************************
+    // template to add from Row
+    //*********************************
+    template<int index>
+    inline typename std::enable_if< index!=0,void>::type
+    AddCell(rowType&& row);
+
+    template<int index>
+    inline typename std::enable_if< index==0,void>::type
+    AddCell(rowType&& row);
     //*********************************
 
     //*********************************
@@ -215,6 +228,9 @@ public:
     void emplace_back(T&& v) {
         data.emplace_back(v);
     }
+    void emplace_back(const T& v) {
+        data.emplace_back(v);
+    }
 
     int size() {
         return data.size();
@@ -283,11 +299,13 @@ template<>
 class CSV_Column<double>: public CSV_Column_Common<double> {
 public:
     inline void NewRow(const string& token) {
-        data.emplace_back(atof(token.c_str()));
+        double d;
+        istringstream(token) >> d;
+        data.emplace_back(std::move(d));
     }
 
     inline void Print(std::stringstream& str, int row) {
-        str << data[row];
+        str << std::scientific << setprecision(15) << data[row];
     }
 };
 
@@ -295,11 +313,13 @@ template<>
 class CSV_Column<float>: public CSV_Column_Common<float> {
 public:
     inline void NewRow(const string& token) {
-        data.emplace_back(atof(token.c_str()));
+        float f;
+        istringstream(token) >> f;
+        data.emplace_back(std::move(f));
     }
 
     inline void Print(std::stringstream& str, int row) {
-        str << data[row];
+        str << std::scientific << setprecision(7) << data[row];
     }
 };
 

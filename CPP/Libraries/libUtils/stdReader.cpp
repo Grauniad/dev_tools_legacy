@@ -1,8 +1,9 @@
 #include "stdReader.h"
 
 StdReader::StdReader(istream&f ): file(f) {
-    file.seekg(file.end, ios_base::beg);
+    file.seekg(0, ios_base::end);
     length = file.tellg();
+    file.seekg(file.end, ios_base::beg);
 }
 void StdReader::Read(long offset, void *dest, long size) const {
     file.seekg(offset, ios_base::beg);
@@ -23,11 +24,9 @@ long StdReader::Size() const {
 long StdReader::Next( long offset, unsigned char c) const {
     this->file.seekg(offset, ios_base::beg);
     for (long i=offset; file.good(); i++) {
-        while (file.good() ) {
-            char got = file.get();
-            if (file.good() && got==c ) {
-                return i;
-            }
+        char got = file.get();
+        if (file.good() && got==c ) {
+            return i;
         }
     }
     file.clear();

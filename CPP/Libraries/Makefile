@@ -1,4 +1,4 @@
-MAKE_DIRS= libIOInterface \
+MAKE_DIRS= libIOInterface\
 		   libUtils \
 		   libTest
 

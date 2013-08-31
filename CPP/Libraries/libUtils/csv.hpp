@@ -1,5 +1,7 @@
 #include "csv.h"
 #include "dataVector.h"
+#include "logger.h"
+#include "binaryDescribe.h"
 
 
 template<class...Types>
@@ -21,17 +23,24 @@ void CSV<Types...>::WriteCSV(BinaryWriter writer) {
 template<class...Types>
 CSV<Types...> CSV<Types...>::LoadCSV(BinaryReader reader) {
     CSV<Types...> csv;
+    //TODO
+    SLOG_FROM ( LOG_VERBOSE, "CSV::LoadCSV", "Reading a new CSV file" << endl << BinaryDescribe::Describe(reader, 10240))
 
-    DataVector buf;
+    DataVector buf(1024);
+    BinaryWriter w(buf);
+    BinaryReader r(buf);
     while ( reader.Offset() < reader.End() ) {
         buf.Clear();
-        BinaryReader next = reader.Find('\n');
+        BinaryReader next = reader.Find(char(10));
         // Extract the line
-        reader.ReadLine(buf,reader.End(),'\n');
+        reader.Read(w,next-reader+1);
         // Replace the '\n' with '\0'
-        buf[buf.Size()-1] = '\0';
+        buf[next-reader] = '\0';
+        SLOG_FROM ( LOG_VERBOSE, "CSV::LoadCSV", "Read a new line from the CSV: (size: " << next - reader << ")" << endl << BinaryDescribe::Describe(r, 1024))
         // Tokenize
-        NewRow(Tokeniser(string(buf.RawData())));
+        string s = r.ReadString();
+        csv.NewRow(Tokeniser(s));
+        reader = next.Offset()+1;
     }
     return std::move(csv);
 }
@@ -42,14 +51,14 @@ CSV<Types...> CSV<Types...>::LoadCSV(BinaryReader reader) {
 template<class...Types>
 void CSV<Types...>::NewRow(const Tokeniser& tok) {
     Tokeniser::iterator it = tok.begin();
-    AddCell<ncols-1>(this->data,it);
+    AddCell<ncols-1>(it);
 }
 
 template<class...Types>
 template< int index>
 inline typename std::enable_if< index!=0,void>::type
 CSV<Types...>::AddCell(Tokeniser::iterator& it) {
-    std::get<index>(this->columns).NewRow(*it);
+    std::get<ncols-1-index>(this->columns).NewRow(*it);
     it++;
     this->AddCell<index -1>(it);
 }
@@ -58,7 +67,7 @@ template<class...Types>
 template< int index>
 inline typename std::enable_if< index==0,void>::type
 CSV<Types...>::AddCell(Tokeniser::iterator& it) {
-    std::get<index>(this->columns).NewRow(*it);
+    std::get<ncols-1>(this->columns).NewRow(*it);
 }
 //*********************************
 
@@ -83,6 +92,30 @@ template<int index>
 inline typename std::enable_if< index==0,void>::type
 CSV<Types...>::AddCell(forwardRowType&& row) {
     std::get<index>(this->columns).emplace_back(std::move(std::get<index>(row)));
+}
+//*********************************
+  
+//*********************************
+// template to add from row
+//*********************************
+template<class...Types>
+void CSV<Types...>::AddRow(rowType&& row) { 
+    this->AddCell<ncols-1>(std::move(row));
+}
+
+template<class...Types>
+template<int index>
+inline typename std::enable_if< index!=0,void>::type
+CSV<Types...>::AddCell(rowType&& row) {
+    std::get<index>(this->columns).emplace_back(std::get<index>(row));
+    this->AddCell<index-1>(std::move(row));
+}
+
+template<class...Types>
+template<int index>
+inline typename std::enable_if< index==0,void>::type
+CSV<Types...>::AddCell(rowType&& row) {
+    std::get<index>(this->columns).emplace_back(std::get<index>(row));
 }
 //*********************************
 
@@ -171,7 +204,7 @@ CSV<Types...>::RemoveCell(int row) {
 //*********************************
   
 //*********************************
-// template to remove a row
+// template to reserve for more rows
 //*********************************
 template<class...Types>
 void CSV<Types...>::Reserve(int rows) {

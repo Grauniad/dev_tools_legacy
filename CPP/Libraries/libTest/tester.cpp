@@ -15,7 +15,7 @@ DefaultTestLogger& DefaultTestLogger::RunTimeLog() {
     return GLOBAL_LOG;
 }
 
-DefaultTestLogger::DefaultTestLogger() {
+DefaultTestLogger::DefaultTestLogger(): ffull_log("test.full_log") {
     Logger::Instance().RegisterLog(*this);
 
     // Prevent Logging directly to stdout / stderr
@@ -45,9 +45,9 @@ void DefaultTestLogger::Log( const string& message,
                              const Time& time,
                              LOG_LEVEL level) {
     if ( level == LOG_DEFAULT ) {
-        testoutput << message <<endl;
-        overview_log << message <<endl;
-        full_log << message <<endl;
+        testoutput << message << std::endl;
+        overview_log << message << std::endl;
+        full_log << message << std::endl;
 
     } else if (    level == LOG_ERROR
                 || level == LOG_WARNING
@@ -62,6 +62,10 @@ void DefaultTestLogger::Log( const string& message,
         if ( ENV::IsSet("ELF_64_TEST_FULL_TEST_LOG") ) {
             testoutput << GenericFormatLogger::Format(message,context,time,level);
         }
+    }
+    if ( ENV::IsSet("ELF_64_TEST_FULL_TEST_LOG") ) {
+        ffull_log << GenericFormatLogger::Format(message,context,time,level);
+        ffull_log.flush();
     }
 }
 

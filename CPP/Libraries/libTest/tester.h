@@ -5,6 +5,7 @@
 #include <sstream>
 #include "logger.h"
 #include "util_time.h"
+#include <fstream>
 
 
 using namespace std;
@@ -82,7 +83,7 @@ public:
      // Handle endl
      static DefaultTestLogger& endl(DefaultTestLogger& stream)
      {
-         PRINT ("\n")
+         SPRINT (endl)
          return stream;
      }
 
@@ -107,6 +108,7 @@ private:
      stringstream testoutput;
      stringstream overview_log;
      stringstream full_log;
+     ofstream     ffull_log;
 };
 
 #ifdef __PROFILE__TESTS

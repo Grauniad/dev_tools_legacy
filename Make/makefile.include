@@ -3,8 +3,9 @@
 # Luke Humphreys 2012
  
 # This project requires the C++11 standard
-ADDITIONAL_INCLUDE_FLAGS=
-ADDITIONAL_TEST_CPP_FLAGS=
+
+#ADDITIONAL_INCLUDE_FLAGS=
+#ADDITIONAL_TEST_CPP_FLAGS=
 
 #Define the base directories
 ifndef PROJECT_ROOT_DIR
