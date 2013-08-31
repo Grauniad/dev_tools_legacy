@@ -8,8 +8,11 @@
 #include <array>
 #include <vector>
 #include "binaryReader.h"
+#include "binaryWriter.h"
 #include <type_traits>
 
+#define TYPE(i) CSV<Types...>::ColTypes<i>
+#define THIS CSV<Types...>
 
 typedef boost::tokenizer<boost::escaped_list_separator<char> > Tokeniser;
 
@@ -20,6 +23,7 @@ template<class T>
 class CSV_CellInstance;
 template<class T>
 class CSV_Column;
+
 
 // TODO: Write file
 template<class...Types>
@@ -37,13 +41,17 @@ public:
     static const int ncols = sizeof...(Types);
     int Rows();
 
+    // Empty file
+    CSV(){}
+
     // Move constructor
     CSV(CSV&& src) {
         std::swap(this->columns, src.columns);
     }
 
     // Get a Row
-    rowType&& GetRow(int i);
+    rowType GetRow(int i);
+    void GetRow(int i, Types&...args);
 
     // Remove a Row
     void RemoveRow(int i);
@@ -52,25 +60,26 @@ public:
     void AddRow(Types&&...args);
 
     // Print a Row
-    std::string&& PrintRow(int i);
+    std::string PrintRow(int i);
 
     // Get a Column
     template <int i> 
-    CSV_Column<ColTypes<i> >& GetColumn() { 
+    inline CSV_Column<ColTypes<i> >& GetColumn() { 
         return std::get<i>(columns);
     }
 
     // Get a cell
     template<int col>
-    ColTypes<col>& GetCell(int row) {
+    inline ColTypes<col>& GetCell(int row) {
         return std::get<col>(columns)[row];
     }
 
-    static CSV<Types...>&& LoadCSV(BinaryReader reader);
+    static CSV<Types...> LoadCSV(BinaryReader reader);
+    void WriteCSV(BinaryWriter writer);
 
 private:
+
     // Utility Functions
-    CSV(); 
     void NewRow(const Tokeniser& tok);
 
     // Data
@@ -83,11 +92,11 @@ private:
     //*********************************
     template<int index>
     inline typename std::enable_if< index!=0,void>::type
-    AddCell(Tokeniser::iter& it);
+    AddCell(Tokeniser::iterator& it);
 
     template<int index>
     inline typename std::enable_if< index==0,void>::type
-    AddCell(Tokeniser::iter& it);
+    AddCell(Tokeniser::iterator& it);
     //*********************************
       
     //*********************************
@@ -105,24 +114,35 @@ private:
     //*********************************
     // template to get a row
     //*********************************
-    template< int index, class tupleType, class extendedTupleType>
-    inline typename std::enable_if< index!=0,extendedTupleType>::type&&
-    GetCell(tupleType&& t, int row);
 
-    template< int index, class tupleType, class extendedTupleType>
-    inline typename std::enable_if< index==0,extendedTupleType>::type&&
-    GetCell(tupleType&& t, int row);
+    // Used to by-pass the "must initialise reference" rule
+    // WARNING - This is inherently dangerous, use with EXTREME CAUTION
+    template<class T>
+    class pT {
+        public:
+        inline operator T&() {  return *i; }
+        inline pT& operator=(T& rhs) { i = &rhs; }
+        T *i;
+    };
+
+    template< int index>
+    inline typename std::enable_if< index!=0,void>::type
+    GetCell(std::tuple<pT<Types>...>& t, int row);
+
+    template< int index>
+    inline typename std::enable_if< index==0,void>::type
+    GetCell(std::tuple<pT<Types>...>& t, int row);
     //*********************************
       
     //*********************************
     // template to print a row
     //*********************************
     template<int index>
-    inline typename std::enable_if< index!=0,void>::type&&
+    inline typename std::enable_if< index!=0,void>::type
     PrintCell(std::stringstream& s, int row);
 
     template<int index>
-    inline typename std::enable_if< index==0,void>::type&&
+    inline typename std::enable_if< index==0,void>::type
     PrintCell(std::stringstream& s, int row);
     //*********************************
       
@@ -148,8 +168,8 @@ public:
     T* array() { return data.data(); }
 
     // Element access
-    T& operator[](int i);
-    const T& operator[](int i) const;
+    T& operator[](int i) { return data[i]; }
+    const T& operator[](int i) const { return data[i]; }
 
     // Remove an element
     void remove(int i) {
@@ -159,10 +179,6 @@ public:
     // Insert an element
     void emplace_back(T&& v) {
         data.emplace_back(v);
-    }
-
-    void Print(std::stringstream& str, int row) {
-        str << data[row];
     }
 
     int size() {
@@ -195,6 +211,33 @@ public:
     inline void NewRow(const string& token) {
         this->data.emplace_back(token);
     }
+
+    inline void Print(std::stringstream& str, int row) {
+        str << this->data[row];
+    }
+};
+
+template<>
+class CSV_Column<string>: public CSV_Column_Common<string> {
+public:
+    inline void NewRow(const string& token) {
+        this->data.emplace_back(token);
+    }
+
+    inline void Print(std::stringstream& str, int row) {
+        str << "\"";
+        for(int i=0; i<data[row].length(); i++ ) {
+            const char& c = data[row][i];
+            if ( c == '"' ) {
+                str << '\\' << '"';
+            } else if ( c == '\n') {
+                str << '\\' << 'n';
+            } else {
+                str << c;
+            }
+        }
+        str << "\"";
+    }
 };
 
 template<>
@@ -202,6 +245,10 @@ class CSV_Column<double>: public CSV_Column_Common<double> {
 public:
     inline void NewRow(const string& token) {
         data.emplace_back(atof(token.c_str()));
+    }
+
+    inline void Print(std::stringstream& str, int row) {
+        str << data[row];
     }
 };
 
@@ -211,6 +258,10 @@ public:
     inline void NewRow(const string& token) {
         data.emplace_back(atof(token.c_str()));
     }
+
+    inline void Print(std::stringstream& str, int row) {
+        str << data[row];
+    }
 };
 
 template<>
@@ -218,6 +269,10 @@ class CSV_Column<int>: public CSV_Column_Common<int> {
 public:
     inline void NewRow(const string& token) {
         data.emplace_back(atoi(token.c_str()));
+    }
+
+    inline void Print(std::stringstream& str, int row) {
+        str << data[row];
     }
 };
 
@@ -227,7 +282,12 @@ public:
     void NewRow(const string& token) {
         data.emplace_back(atol(token.c_str()));
     }
+
+    inline void Print(std::stringstream& str, int row) {
+        str << data[row];
+    }
 };
+
 
 #include "csv.hpp"
 

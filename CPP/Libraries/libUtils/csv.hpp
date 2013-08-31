@@ -1,20 +1,38 @@
 #include "csv.h"
+#include "dataVector.h"
+
+
 template<class...Types>
 int CSV<Types...>::Rows() {
     return std::get<0>(this->columns).size();
 }
 
 template<class...Types>
-CSV<Types...>&& CSV<Types...>::LoadCSV(BinaryReader reader) {
+void CSV<Types...>::WriteCSV(BinaryWriter writer) {
+    for ( int i = 0; i< Rows(); i++) {
+        string && l = PrintRow(i);
+        writer.Write(l.c_str(),l.length());
+        writer+=l.length();
+        writer.Fill(1,'\n');
+        writer+=1;
+    }
+}
+
+template<class...Types>
+CSV<Types...> CSV<Types...>::LoadCSV(BinaryReader reader) {
     CSV<Types...> csv;
 
-    for ( std::string l = reader.ReadString();
-          reader.Offset() < reader.End();
-          reader+= l.length()) 
-    {
-        NewRow(Tokeniser(l));
+    DataVector buf;
+    while ( reader.Offset() < reader.End() ) {
+        buf.Clear();
+        BinaryReader next = reader.Find('\n');
+        // Extract the line
+        reader.ReadLine(buf,reader.End(),'\n');
+        // Replace the '\n' with '\0'
+        buf[buf.Size()-1] = '\0';
+        // Tokenize
+        NewRow(Tokeniser(string(buf.RawData())));
     }
-
     return std::move(csv);
 }
 
@@ -23,14 +41,14 @@ CSV<Types...>&& CSV<Types...>::LoadCSV(BinaryReader reader) {
 //*********************************
 template<class...Types>
 void CSV<Types...>::NewRow(const Tokeniser& tok) {
-    Tokeniser::iter it = tok.begin();
+    Tokeniser::iterator it = tok.begin();
     AddCell<ncols-1>(this->data,it);
 }
 
 template<class...Types>
 template< int index>
 inline typename std::enable_if< index!=0,void>::type
-CSV<Types...>::AddCell(Tokeniser::iter& it) {
+CSV<Types...>::AddCell(Tokeniser::iterator& it) {
     std::get<index>(this->columns).NewRow(*it);
     it++;
     this->AddCell<index -1>(it);
@@ -39,7 +57,7 @@ CSV<Types...>::AddCell(Tokeniser::iter& it) {
 template<class...Types>
 template< int index>
 inline typename std::enable_if< index==0,void>::type
-CSV<Types...>::AddCell(Tokeniser::iter& it) {
+CSV<Types...>::AddCell(Tokeniser::iterator& it) {
     std::get<index>(this->columns).NewRow(*it);
 }
 //*********************************
@@ -49,22 +67,22 @@ CSV<Types...>::AddCell(Tokeniser::iter& it) {
 //*********************************
 template<class...Types>
 void CSV<Types...>::AddRow(Types&&...args) { 
-    this->AddCell<ncols-1>(forward_as_tuple(args...));
+    this->AddCell<ncols-1>(forward_as_tuple(std::move(args)...));
 }
 
 template<class...Types>
 template<int index>
 inline typename std::enable_if< index!=0,void>::type
 CSV<Types...>::AddCell(forwardRowType&& row) {
-    std::get<index>(this->columns).emplace_back(std::get<index>(row));
-    this->AddCell<index-1>(row);
+    std::get<index>(this->columns).emplace_back(std::move(std::get<index>(row)));
+    this->AddCell<index-1>(std::move(row));
 }
 
 template<class...Types>
 template<int index>
 inline typename std::enable_if< index==0,void>::type
 CSV<Types...>::AddCell(forwardRowType&& row) {
-    std::get<index>(this->columns).emplace_back(std::get<index>(row));
+    std::get<index>(this->columns).emplace_back(std::move(std::get<index>(row)));
 }
 //*********************************
 
@@ -72,27 +90,31 @@ CSV<Types...>::AddCell(forwardRowType&& row) {
 // template to get a row
 //*********************************
 template<class...Types>
-typename CSV<Types...>::rowType&& 
+void CSV<Types...>::GetRow(int i, Types&...args) {
+    tie(args...) = std::move(GetRow(i));
+}
+
+template<class...Types>
+typename CSV<Types...>::rowType
 CSV<Types...>::GetRow(int i) {
-    return this->GetCell<ncols-1>(make_tuple(),i);
+    std::tuple<pT<Types>...> t;
+    this->GetCell<ncols-1>(t,i);
+    return std::move(t);
 }
 
 template<class...Types>
-template< int index, class tupleType, class extendedTupleType>
-inline typename std::enable_if< index!=0,extendedTupleType>::type&&
-CSV<Types...>::GetCell(tupleType&& t, int row) {
-    extendedTupleType&& cells =
-         tuple_cat(t, tie(std::get<index>(this->columns)[row]));
-    return this->GetCell<index -1>(cells,row);
+template< int index>
+inline typename std::enable_if< index!=0,void>::type
+THIS::GetCell(std::tuple<pT<Types>...>& t, int row) {
+    std::get<index>(t) = std::get<index>(this->columns)[row];
+    GetCell<index-1>(t,row);
 }
 
 template<class...Types>
-template< int index, class tupleType, class extendedTupleType>
-inline typename std::enable_if< index==0,extendedTupleType>::type&&
-CSV<Types...>::GetCell(tupleType&& t, int row) {
-    extendedTupleType&& cells =
-         tuple_cat(t, tie(std::get<index>(this->columns)[row]));
-    return cells;
+template< int index>
+inline typename std::enable_if< index==0,void>::type
+THIS::GetCell(std::tuple<pT<Types>...>& t, int row) {
+    std::get<index>(t) = std::get<index>(this->columns)[row];
 }
 //*********************************
   
@@ -100,25 +122,26 @@ CSV<Types...>::GetCell(tupleType&& t, int row) {
 // template to print a row
 //*********************************
 template<class...Types>
-std::string&& CSV<Types...>::PrintRow(int i) {
+std::string CSV<Types...>::PrintRow(int i) {
     std::stringstream s;
     this->PrintCell<ncols-1>(s,i);
-    return std::move(s.str());
+    return s.str();
 }
 
 template<class...Types>
 template<int index>
-inline typename std::enable_if< index!=0,void>::type&&
+inline typename std::enable_if< index!=0,void>::type
 CSV<Types...>::PrintCell(std::stringstream& s, int row) {
-    std::get<index>(this->columns).Print(s,row);
+    std::get<ncols-1-index>(this->columns).Print(s,row);
+    s << ",";
     this->PrintCell<index-1>(s,row);
 }
 
 template<class...Types>
 template<int index>
-inline typename std::enable_if< index==0,void>::type&&
+inline typename std::enable_if< index==0,void>::type
 CSV<Types...>::PrintCell(std::stringstream& s, int row) {
-    std::get<index>(this->columns).Print(s,row);
+    std::get<ncols-1>(this->columns).Print(s,row);
 }
 //*********************************
 
@@ -146,4 +169,4 @@ CSV<Types...>::RemoveCell(int row) {
     std::get<index>(this->columns).remove(row);
 }
 //*********************************
-  
+

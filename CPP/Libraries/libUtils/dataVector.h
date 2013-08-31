@@ -29,6 +29,7 @@ public:
     // Utility Functions
     virtual void Resize(long size);
     virtual const unsigned char* RawData() { return this->data();}
+    virtual void Clear() { this->clear(); }
 
     unsigned char& operator[](long idx) { 
         return vector<unsigned char>::operator[](idx);
