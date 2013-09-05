@@ -83,7 +83,7 @@ public:
      // Handle endl
      static DefaultTestLogger& endl(DefaultTestLogger& stream)
      {
-         SPRINT (endl)
+         SPRINT (std::endl)
          return stream;
      }
 

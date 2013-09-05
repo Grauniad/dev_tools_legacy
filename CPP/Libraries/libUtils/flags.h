@@ -64,8 +64,8 @@ protected:
     typedef std::map<char,Mask> MaskMap;
 
 private:
-    shared_ptr<MaskMap> flags;
     shared_ptr<NameMap> names;
+    shared_ptr<MaskMap> flags;
     unsigned long mask;
     short flagCount;
 };

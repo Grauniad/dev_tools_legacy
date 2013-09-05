@@ -15,6 +15,7 @@ public:
     {
         this->Fill(0,'\0',size);
     }
+    virtual ~DataLump() = default;
     const unsigned char* RawData() const;
     unsigned char* RawData();
 private:

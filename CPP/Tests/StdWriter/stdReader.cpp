@@ -90,8 +90,6 @@ void Delete ( IFStreamReader* reader ) { remove(reader->Fname().c_str()); delete
 
 template<class Reader>
 int VerifyGet(testLogger& log) {
-    long ret = 0;
-
 	Reader *reader = Generator();
     // remember to clean up after ourselves:
     DEFER(Delete(reader);)
@@ -117,7 +115,6 @@ int VerifyGet(testLogger& log) {
 
 template<class Reader>
 int VerifyRead(testLogger& log) {
-    long ret = 0;
 
 	Reader *reader = Generator();
     // remember to clean up after ourselves:
@@ -150,8 +147,6 @@ int VerifyRead(testLogger& log) {
 
 template<class Reader>
 int VerifyReadString(testLogger& log) {
-    long ret = 0;
-
 	Reader *reader = Generator();
     // remember to clean up after ourselves:
     DEFER(Delete(reader);)

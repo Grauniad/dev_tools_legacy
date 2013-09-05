@@ -108,14 +108,3 @@ int VerifyFill(testLogger& log) {
     delete [] refstring;
     return ret;
 }
-
-template<class Writer>
-long VerifyPut(testLogger& log) {
-	// Verify forward write
-	Writer("test.tmp");
-	const char * const testStr = "Hello World!\0Another String";
-	const char * part1 = testStr;
-	const char * part2 = testStr + 1 + strlen(part1);
-	cout << part1 << endl;
-	cout << part2 << endl;
-}

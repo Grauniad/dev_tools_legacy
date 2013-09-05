@@ -153,7 +153,10 @@ private:
     class pT {
         public:
         inline operator T&() {  return *i; }
-        inline pT& operator=(T& rhs) { i = &rhs; }
+        inline pT& operator=(T& rhs) { 
+            i = &rhs; 
+            return *this;  
+        }
         T *i;
     };
 
@@ -281,7 +284,7 @@ public:
 
     inline void Print(std::stringstream& str, int row) {
         str << "\"";
-        for(int i=0; i<data[row].length(); i++ ) {
+        for(int i=0; i<static_cast<int>(data[row].length()); i++ ) {
             const char& c = data[row][i];
             if ( c == '"' ) {
                 str << '\\' << '"';

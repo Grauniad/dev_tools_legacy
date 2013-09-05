@@ -159,6 +159,7 @@ long VerifyData(const char* d1, const char *d2, long size) {
             throw TestError(err.str(),i);
         }
     }
+    return 0;
 }
 
 long VerifyOffset(const BinaryReader& reader, long offset, 
@@ -350,7 +351,7 @@ int VerifyStringPull( testLogger& log) {
         VerifyData(read, pulld,120);
 
         log << "Second op" << endl;
-        rd2 >> opd + strlen(opd) + 1;
+        rd2 >> (opd + strlen(opd) + 1);
         VerifyData(read, opd,120);
 
         log << "Pull to the end... " << endl;
@@ -363,7 +364,7 @@ int VerifyStringPull( testLogger& log) {
         VerifyData(read, pulld,120);
 
         log << "Final op" << endl;
-        rd2 >> opd + 51;
+        rd2 >> (opd + 51);
         VerifyData(read, opd,120);
 
 

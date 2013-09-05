@@ -61,6 +61,10 @@ ifndef FATAL_WARNINGS
    FATAL_WARNINGS=YES
 endif
 
+ifndef ALL_WARNINGS
+   ALL_WARNINGS=YES
+endif
+
 ifndef USE_CPP11
    USE_CPP11=NO
 endif
@@ -145,6 +149,10 @@ endif
 
 ifeq ($(FATAL_WARNINGS),YES)
   CPP_FLAGS+=-Werror
+endif
+
+ifeq ($(ALL_WARNINGS),YES)
+  CPP_FLAGS+=-Wall
 endif
 
 ifeq ($(DEBUG_ON),YES)
@@ -416,6 +424,7 @@ usage:
 	@echo "CPP_PROFILE_FLAGS          (-pg -O2 -march=native) CPP Flags used when profiling.               <$(CPP_PROFILE_FLAGS)>"
 	@echo "DEBUG_ON:                  (YES)     To disable debug symbols: export DEBUG_ON=FALSE            <$(DEBUG_ON)>"
 	@echo "FATAL_WARNINGS             (YES)     Set to NO to prevent compiler warnings breaking the build  <$(FATAL_WARNINGS)>"
+	@echo "ALL_WARNINGS               (YES)     Set to NO to turn off warnings for questionable code       <$(ALL_WARNINGS)>"
 	@echo "USE_CPP11:                 (NO)      To use the CPP11 std, set USE_CPP11=YES                    <$(USE_CPP11)>"
 	@echo ""
 	@echo "        CTAGS"

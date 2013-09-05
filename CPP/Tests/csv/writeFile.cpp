@@ -330,7 +330,7 @@ int WriteFile(testLogger& log ) {
 
     string expectedData = "0,1,2.1234567e+00,3.000000010000000e+00,\"\\\"four\\\" - \\n      a magic number for some\"\n5,6,7.0000002e-03,8.000090000000000e+05,\"This is just a boring string with some data\"\n";
 
-    for ( int i=0; i<expectedData.length(); i++ ) {
+    for ( int i=0; i<static_cast<int>(expectedData.length()); i++ ) {
         if ( expectedData[i] != file.Get(i) ) {
             SPRINT ( "Missmatch in file, at index " << i )
             SPRINT ( "Expected: " << expectedData[i] )

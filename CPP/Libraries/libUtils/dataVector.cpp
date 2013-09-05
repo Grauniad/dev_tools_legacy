@@ -13,7 +13,7 @@ DataVector::DataVector(long size)
     }
 }
 void DataVector::Write(long offset, const void *src, long size){
-    if (offset + size >= this->size())
+    if (offset + size >= static_cast<long>(this->size()))
         this->resize(offset+size);
     for (long i=0; i<size; i++) {
         (*this)[i+offset] = 
@@ -22,13 +22,13 @@ void DataVector::Write(long offset, const void *src, long size){
 }
 
 void DataVector::Put(long offset, unsigned char c) {
-    if (offset >= this->size())
+    if (offset >= static_cast<long>(this->size()))
         this->resize(offset+1);
     (*this)[offset] = c;
 }
 
 void DataVector::Fill(long offset, unsigned char c, long count){
-    if (offset + count >= this->size())
+    if (offset + count >= static_cast<long>(this->size()))
         this->resize(offset + count);
     for (long i=offset; i<(offset + count); i++) {
         (*this)[i] = c;
@@ -53,7 +53,7 @@ long DataVector::Size()const {
 
 long DataVector::Next( long offset, unsigned char c) const {
     long i;
-    for (i = offset; i < this->size(); ++i) {
+    for (i = offset; i < static_cast<long>(this->size()); ++i) {
         if ( (*this)[i] == c ) 
             return i;
     }

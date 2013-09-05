@@ -4,8 +4,8 @@
 #include <sstream>
 #include <iostream>
 Flags::Flags (string flags):
-    flags(new MaskMap),
-    names(new NameMap) 
+    names(new NameMap),
+    flags(new MaskMap)
 {
     flagCount=0;
     for (auto flag: flags ) {
@@ -26,10 +26,10 @@ Flags::Flags (string flags, std::map<string,char> &nameMap) :
 }
 
 Flags::Flags(const Flags& rhs):
-    flagCount(rhs.flagCount),
-    mask(rhs.mask),
     names(rhs.names),
-    flags(rhs.flags) 
+    flags(rhs.flags), 
+    mask(rhs.mask),
+    flagCount(rhs.flagCount)
 { 
 }
 

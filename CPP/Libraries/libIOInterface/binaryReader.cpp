@@ -131,7 +131,7 @@ void SubReader::ReadString(long offset, std::string& dest)const {
 }
 
 unsigned char SubReader::Get(long offset)const {
-    (pos_ + offset).Get();
+    return (pos_ + offset).Get();
 }
 
 long SubReader::Size() const {

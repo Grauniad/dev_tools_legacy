@@ -200,6 +200,7 @@ long VerifyData(const char* d1, const char *d2, long size) {
             throw TestError(err.str(),i);
         }
     }
+    return 0;
 }
 
 long VerifyOffset(BinaryWriter& writer, long offset, string msg) {
@@ -424,7 +425,6 @@ int VerifyStringPushes(testLogger& log ) {
     try {
         const char *str = "Hello World!\0++IGNORED++";
         //don't forget the null char
-        int len = strlen(str) + 1;
         string stds = "some other string";
 
         DataVector out(100), out2(100), out3(100);

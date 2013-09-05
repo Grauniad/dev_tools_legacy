@@ -104,7 +104,7 @@ int VerifyRead(testLogger& log) {
     log << " Got: " << endl;
     log <<  got << endl;
     log << " ************************************************** " << endl;
-    for ( int i=0; i<expected.length(); i++ ) {
+    for ( int i=0; i<static_cast<int>(expected.length()); i++ ) {
         if ( expected[i] != got[i] ) {
             log << "Failure at " << i << " of " << expected.length() << endl;
             return 1;
