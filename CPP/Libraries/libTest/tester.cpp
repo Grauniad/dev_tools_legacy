@@ -69,7 +69,9 @@ void DefaultTestLogger::Log( const string& message,
     }
 }
 
-Test::Test(string description, std::function<int(testLogger& log)> test) {
+Test::Test(string description, std::function<int(testLogger& log)> test):
+    runTime(0)
+{
     this->testLogged = test;
     this->testType = LOGGED;
     this->description = description;
@@ -108,11 +110,11 @@ void Test::RunTest() {
             }
         }
     #endif
-    double duration = double(stop - start) / CLOCKS_PER_SEC;
+    runTime = double(stop - start) / CLOCKS_PER_SEC;
     if (result == 0 ) {
-        cout << "TEST PASSED in " << duration << " seconds" <<  endl;
+        cout << "TEST PASSED in " << runTime << " seconds" <<  endl;
     } else {
-        cout << "TEST FAILED in " << duration << " seconds" <<  endl;
+        cout << "TEST FAILED in " << runTime << " seconds" <<  endl;
         cout << "Run Time Log:" << endl;
         cout << "Test Log follows: " << endl;
         cout << log.str() << endl;

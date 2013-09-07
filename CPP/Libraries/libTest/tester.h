@@ -49,8 +49,7 @@ public:
 
     void WriteLog(const string& descr, const Time& t) {
     }
-};
-
+}; 
 class DefaultTestLogger: LogDevice {
 public:
     DefaultTestLogger();
@@ -124,12 +123,14 @@ class Test {
 public:
     Test (string description, std::function<int(testLogger&)> test);
     void RunTest();
+    double RunTime() { return runTime; }
 
 private:
     std::function<int(testLogger& )> testLogged;
     string description;
 	TEST_TEMPLATE testType;
     Time startTime;
+    double runTime;
 };
 
 

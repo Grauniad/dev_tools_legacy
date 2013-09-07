@@ -439,7 +439,7 @@ $(EXPORT_TESTS_TO)%: %.cpp $(LINKED_FILES)
 
 # Macro for building STATIC libraries
 $(LIB_TO_BUILD): $(TO_BUILD)
-	ar -cr 	$@ 	$+
+	$(AR) -cr 	$@ 	$+
 
 # Macro for moving include files to the includes directory. 
 $(EXPORT_INCLUDES_DIR)%: %

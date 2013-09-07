@@ -2,6 +2,9 @@
 ifndef CPP
     $(error CPP must be specified!)
 endif
+ifndef AR
+    $(error AR must be specified!)
+endif
 
 # Default flags
 ifndef DEFAULT_DEBUG_FLAGS
