@@ -44,11 +44,28 @@ endif
 
 # Compilation variables
 #
-DEBUG_FLAGS=-ggdb
+ifndef DEBUG_FLAGS
+    DEBUG_FLAGS=-ggdb
+endif
+
+ifndef RELEASE_FLAGS
+   RELEASE_FLAGS=-O2 -march=native
+endif
+
 CPPSTD=gnu++98 #(overridden by USE_CPP11)
 
 ifeq ($(USE_CPP11),YES)
   CPPSTD=c++11
+endif
+
+ifeq ($(findstring debug,$(MAKECMDGOALS)),debug)
+   DEBUG_ON=YES
+   RELEASE_ON=NO
+endif
+
+ifeq ($(findstring release,$(MAKECMDGOALS)),release)
+   DEBUG_ON=NO
+   RELEASE_ON=YES
 endif
 
 # Set to YES to enable
@@ -164,6 +181,10 @@ ifeq ($(DEBUG_ON),YES)
   CPP_FLAGS+=$(DEBUG_FLAGS)
 endif
 
+ifeq ($(RELEASE_ON),YES)
+  CPP_FLAGS+=$(RELEASE_FLAGS)
+endif
+
 
 ifeq ($(findstring cover,$(MAKECMDGOALS)),cover)
    CPP_FLAGS+=--coverage
@@ -272,6 +293,8 @@ gdbtest: all
 cover: all 
 profile: all
 notests: all
+debug: all
+release: all
 coverbuild: GEN_COVER
 coverview: VIEW_COVER
 
@@ -433,13 +456,16 @@ usage:
 	@echo "ADDITIONAL_INCLUDE_FLAGS:  ()        Add extra include directories                              <$(ADDITIONAL_INCLUDE_FLAGS)>"
 	@echo "ADDITIONAL_TEST_CPP_FLAGS: ()        Add extra flags used when compiling test binaries          <$(ADDITIONAL_INCLUDE_FLAGS)>"
 	@echo "ALL_WARNINGS               (YES)     Set to NO to turn off warnings for questionable code       <$(ALL_WARNINGS)>"
+	@echo "CORE_SIZE         (1048576KB [1GB])  Max allowed size of genereated core files                  <$(CORE_SIZE)>"
 	@echo "CPPSTD:                    (gnu++98) SetSet the C++ standard to be used by g++, e.g             <$(CPPSTD)>"
 	@echo "CPP_FLAGS:                 ()        Flags passed to g++                                        <$(CPP_FLAGS)>" 
 	@echo "CPP_PROFILE_FLAGS          (-pg -O2 -march=native) CPP Flags used when profiling.               <$(CPP_PROFILE_FLAGS)>"
+	@echo "DEBUG_FLAGS:               (-ggdb)   Flags to the compiler when debugging is enabled            <$(DEBUG_FLAGS)>"
 	@echo "DEBUG_ON:                  (YES)     To disable debug symbols: export DEBUG_ON=FALSE            <$(DEBUG_ON)>"
 	@echo "FATAL_WARNINGS             (YES)     Set to NO to prevent compiler warnings breaking the build  <$(FATAL_WARNINGS)>"
 	@echo "PROFILE_SECS               (5)       Minimum time a test must run for when profiling            <$(PROFILE_SECS)>"
-	@echo "CORE_SIZE         (1048576KB [1GB])  Max allowed size of genereated core files                  <$(CORE_SIZE)>"
+	@echo "RELEASE_FLAGS   (-O2 -march=native)  Flags to the compiler when release build is enabled        <$(RELEASE_FLAGS)>"
+	@echo "RELEASE_ON:                (YES)     Enable release optimizations,                              <$(RELEAE_ON)>"
 	@echo "USE_CPP11:                 (NO)      To use the CPP11 std, set USE_CPP11=YES                    <$(USE_CPP11)>"
 	@echo ""
 	@echo "        CTAGS"
