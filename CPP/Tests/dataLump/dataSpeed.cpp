@@ -17,10 +17,9 @@ long viaVtable (FileLikeObject& arr2s, FileLikeObject& arr5s,
                                        FileLikeObject& both,
                                        testLogger& log);
 
-const long MB = 1024*1024;
-const long maxCount = 0.0099*MB;
+#define maxCount 5000000
 //WARNING!: arbitrary - make sure this is compatible with your setup
-const long STACK_CUTOFF = 0.01*MB; 
+const long STACK_CUTOFF = 0.01*1024*1024; 
 
 //Uncoment this to dump arrays if something goes wrong
 //#define DEBUG

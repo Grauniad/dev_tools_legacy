@@ -548,13 +548,13 @@ int VerifyReadLine (testLogger& log) {
 
         // Verify max limit
         BinaryReader r(data);
-        r.ReadLine((unsigned char *)outData,25,128);
+        r.ReadLine(reinterpret_cast<unsigned char*>(outData),25,char(127));
         VerifyData((char *)data.RawData(),outData,25);
         VerifyData(nullData+25,outData+25,100);
 
-        r.ReadLine((unsigned char *)outData,256,128);
-        VerifyData((char *)data.RawData(),outData,128);
-        VerifyData(nullData+128,outData+128,100);
+        r.ReadLine(reinterpret_cast<unsigned char*>(outData),256,char(127));
+        VerifyData((char *)data.RawData(),outData,127);
+        VerifyData(nullData+127,outData+127,100);
 
     } catch (TestError& e) {
         return e.Error(log);
@@ -579,11 +579,11 @@ int VerifyReadLineForWriter (testLogger& log) {
 
         // Verify max limit
         BinaryReader r(data);
-        r.ReadLine(w,25,128);
+        r.ReadLine(static_cast<BinaryWriter>(w),25,char(128));
         VerifyData((char *)data.RawData(),outData,25);
         VerifyData(nullData+25,outData+25,100);
 
-        r.ReadLine(w,256,128);
+        r.ReadLine(static_cast<BinaryWriter>(w),256,char(128));
         VerifyData((char *)data.RawData(),outData,128);
         VerifyData(nullData+128,outData+128,100);
 

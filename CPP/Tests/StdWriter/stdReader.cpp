@@ -14,12 +14,8 @@ int VerifyRead(testLogger& log);
 template<class Reader>
 int VerifyReadString(testLogger& log);
 
-string quote = R"(
-There is a computer disease that anybody who works with computers knows about. 
-It's a very serious disease and it interferes completely with the work. 
-The trouble with computers is that you 'play' with them!
-Richard P. Feynman 
-)";
+string quote; 
+
 
 const char secondString[] = "Oh look!, another string on the end..";
 
@@ -35,6 +31,12 @@ int VerifyRead(testLogger& log);
 
 int main(int argc, const char *argv[])
 {
+    stringstream q;
+    q << "There is a computer disease that anybody who works with computers knows about." << endl;
+    q << "It's a very serious disease and it interferes completely with the work. " << endl;
+    q << "The trouble with computers is that you 'play' with them!" << endl;
+    q << "Richard P. Feynman " << endl;
+    quote = q.str();
     Test("Basic gets",  (loggedTest)VerifyGet<IFStreamReader>).RunTest();
     Test("Read hunks",  (loggedTest)VerifyRead<IFStreamReader>).RunTest();
     Test("Read hunks",  (loggedTest)VerifyReadString<IFStreamReader>).RunTest();
@@ -94,12 +96,12 @@ int VerifyGet(testLogger& log) {
     // remember to clean up after ourselves:
     DEFER(Delete(reader);)
 
-    vector<int> testInds  ({
-         0, 
-         (int)quote.length(),
-         10,
-         50
-    });
+    vector<int> testInds;
+    testInds.reserve(4);
+    testInds[0] = 0;
+    testInds[1] = quote.length();
+    testInds[2] = 10;
+    testInds[3] = 50;
 
     for (int& ind: testInds) {
         char q = quote[ind];
@@ -123,13 +125,13 @@ int VerifyRead(testLogger& log) {
     char* buffer = new char[quote.length()];
     DEFER(delete [] buffer;)
 
-    vector<int> testInds  ({
-         0, 
-         200,
-         10,
-         0,
-         50
-    });
+    vector<int> testInds;
+    testInds.reserve(5);
+    testInds[0] = 0;
+    testInds[1] = 200;
+    testInds[2] = 10;
+    testInds[3] = 0;
+    testInds[4] = 50;
 
     for (int& ind: testInds) {
         memset(buffer,'\0',quote.length());

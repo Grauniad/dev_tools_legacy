@@ -91,10 +91,10 @@ void Test::RunTest() {
             f(log);
             count++;
         }
-        auto stop = clock();
+        stop = clock();
         if (result == 0 ) {
             long TICKS_PER_SECOND = CLOCKS_PER_SEC;
-            double duration = stop +1 - start;
+            double duration =double( stop +1 - start);
             long target = __PROFILE_CLOCK_SECS__ * TICKS_PER_SECOND; 
 
             cout << duration << " (x"  << count << "), " << target;

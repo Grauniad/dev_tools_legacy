@@ -33,7 +33,7 @@ int HexCode(testLogger& log ) {
     }
 
     for (int i = 0; i < 256; i++) {
-       input[i] = i;
+       input[i] = static_cast<unsigned char>(i);
     }
 
     DataIO f(input,256);

@@ -7,6 +7,8 @@
 #ADDITIONAL_INCLUDE_FLAGS=
 #ADDITIONAL_TEST_CPP_FLAGS=
 
+target: all
+
 
 # Must be specified by the outer makefile-include
 ifndef PROJECT_ROOT_DIR
@@ -16,15 +18,6 @@ endif
 ifndef DEV_TOOLS_DIR
    $(error DEV_TOOLS_DIR must point to the root of the dev_tools depot)
 endif
-
-# Load common defaults
-include $(DEV_TOOLS_DIR)/Make/makefile.COMMON.include
-
-# Load compiler specific flags
-include $(DEV_TOOLS_DIR)/Make/makefile.GNU.include
-
-# Validate variables
-include $(DEV_TOOLS_DIR)/Make/makefile.MANDATORY.include
 
 EXPORTS_DIR=$(PROJECT_ROOT_DIR)exports/
 SCRIPTS_DIR=$(DEV_TOOLS_DIR)Scripts/
@@ -37,15 +30,29 @@ EXPORT_LIB_DIR=$(EXPORTS_DIR)lib/
 EXPORT_PROFILE_DIR=$(EXPORTS_DIR)profs/
 EXPORT_COVER_DIR=$(EXPORTS_DIR)coverage/
 
+ifndef WEB_VIEWER
+    WEB_VIEWER=firefox
+endif
+
+# Load common defaults
+include $(DEV_TOOLS_DIR)/Make/makefile.COMMON.include
+
+# Load compiler specific flags
+ifndef TOOL_CHAIN
+   TOOL_CHAIN=$(DEFAULT_TOOL_CHAIN)
+endif
+include $(DEV_TOOLS_DIR)/Make/makefile.$(TOOL_CHAIN).include
+
+# Validate variables
+include $(DEV_TOOLS_DIR)/Make/makefile.MANDATORY.include
+
+
 ifndef TAGS_DIR
     EXPORT_TAGS_DIR=$(EXPORTS_DIR)tags/
 else
     EXPORT_TAGS_DIR=$(TAGS_DIR)
 endif
 
-ifndef WEB_VIEWER
-    WEB_VIEWER=firefox
-endif
 
 
 #
@@ -304,6 +311,11 @@ else
     CLEAN_CMD=rm $(FILES_TO_CLEAN)
 endif
 
+ifdef NO_$(TOOL_CHAIN)
+   BUILD_DEPS=
+   TO_COPY=
+endif
+
 
 all: $(BUILD_DEPS) $(TO_COPY)
 memtest: all
@@ -317,7 +329,7 @@ coverbuild: GEN_COVER
 coverview: VIEW_COVER
 
 profileview:
-	$(WEB_VIEWER) $(EXPORT_PROFILE_DIR)index.html
+	$(PROFILE_VIEWER)
 
 clean: FOLDERS_TO_CLEAN 
 	$(CLEAN_CMD)
@@ -400,12 +412,13 @@ PROFILE_TESTS: BUILD_AUTO_TESTS
 		echo "Running auto test: $$test";\
 		     $$test || if [ -e core ]; then gdb -tui $$test core; exit; else exit; fi; \
 		echo "Profiling: $$test";\
-		     gprof $$test > $(EXPORT_PROFILE_DIR)/$$(basename $$test).profile  || exit;\
+		     $(PROFILE_COMMAND)\
 		echo "Generating profile html";\
-		     $(SCRIPTS_DIR)/prof2html.py $(EXPORT_PROFILE_DIR)/$$(basename $$test).profile || exit;\
+		     $(PROFILE_GEN_COMMAND)\
 		echo "************************************************************"; \
-		rm gmon.out; \
+		rm -f gmon.out; \
 	done
+
 
 BUILD_PROFILE_PAGE: PROFILE_TESTS
 	@echo "<html> <body><h1> Test Profiles </h1>" > $(EXPORT_PROFILE_DIR)index.html;\
@@ -417,12 +430,8 @@ BUILD_PROFILE_PAGE: PROFILE_TESTS
 
 BUILD_AUTO_TESTS: $(TESTS_TO_BUILD)
 
-GEN_COVER: 
-	lcov --capture --directory $(PROJECT_ROOT_DIR) --output-file $(EXPORT_COVER_DIR)test.info
-	genhtml -f --demangle-cpp  --legend --num-spaces 4 -s $(EXPORT_COVER_DIR)test.info --output-directory $(EXPORT_COVER_DIR)
-
 VIEW_COVER:
-	$(WEB_VIEWER) $(EXPORT_COVER_DIR)index.html
+	$(WEB_VIEWER) $(EXPORT_COVER_DIR)$(COVER_FILE)
 
 
 $(EXPORT_TESTS_TO)%: %.cpp $(LINKED_FILES)

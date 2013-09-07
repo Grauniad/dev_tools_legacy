@@ -15,7 +15,7 @@ void StdReader::ReadString(long offset, std::string& dest) const {
 }
 unsigned char StdReader::Get(long offset) const {
     this->file.seekg(offset, ios_base::beg);
-    return file.get();
+    return static_cast<unsigned char>(file.get());
 }
 
 long StdReader::Size() const {
@@ -24,7 +24,7 @@ long StdReader::Size() const {
 long StdReader::Next( long offset, unsigned char c) const {
     this->file.seekg(offset, ios_base::beg);
     for (long i=offset; file.good(); i++) {
-        char got = file.get();
+        unsigned char got = static_cast<unsigned char>(file.get());
         if (file.good() && got==c ) {
             return i;
         }
@@ -36,7 +36,7 @@ long StdReader::Last( long offset, unsigned char c) const {
     for (long i=offset; i>=0; i--) {
             // TODO: do some kind of buffering here?
             this->file.seekg(i, ios_base::beg);
-            char got = file.get();
+            unsigned char got = static_cast<unsigned char>(file.get());
             if ( got == c ) 
                 return i;
     }

@@ -1,0 +1,23 @@
+DEFAULT_DEBUG_FLAGS=-debug all
+DEFAULT_RELEASE_FLAGS=-O2 -xHost
+DEFAULT_CPP_PROFILE_FLAGS=-profile-functions -profile-loops=all -profile-loops-report=2 -prof-dir $(EXPORT_PROFILE_DIR)
+DEFAULT_CPPSTD=gnu++98
+
+COMPILER_CPP11=c++11
+COMPILER_ALL_WARNINGS=-Wall -Wcheck
+COMPILER_FATAL_WARNINGS=-Werror
+COMPILER_COVERAGE=-prof-gen=srcpos -prof-dir $(EXPORT_COVER_DIR)
+
+PROFILE_COMMAND=rm *.dump; mv loop_prof_*.xml $(EXPORT_PROFILE_DIR)/$$(basename $$test).profile; \
+PROFILE_GEN_COMMAND=
+PROFILE_VIEWER=loopprofileviewer.sh 
+
+CPP=icc
+
+COVER_FILE=CODE_COVERAGE.HTML
+
+GEN_COVER: 
+	profmerge -cov_dir $(EXPORT_COVER_DIR) -cov_dpi ProjectCoverage.dpi
+	codecov -prj "Project" -dpi $(EXPORT_COVER_DIR)/ProjectCoverage.dpi -spi $(EXPORT_COVER_DIR)/pgopti.spi
+	mv -f CODE_COVERAGE.HTML $(EXPORT_COVER_DIR)/CODE_COVERAGE.HTML
+	mv -f CodeCoverage/ $(EXPORT_COVER_DIR)/CodeCoverage

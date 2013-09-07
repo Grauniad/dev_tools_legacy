@@ -25,7 +25,7 @@ std::string BinaryDescribe::Describe(const BinaryReader& src, long len) {
             reader+=1;
 
             // Write the binary #
-            unsigned short n = c - 0;
+            int n = c - 0;
             binstr << hex << setw(2) << setfill('0') << n;
             binstr << " ";
 

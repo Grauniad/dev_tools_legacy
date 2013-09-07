@@ -31,3 +31,11 @@ ifndef COMPILER_COVERAGE
     $(error COMPILER_COVERAGE must be specified!)
 endif
 
+ifndef COVER_FILE
+    $(error COVER_FILE must be specified!)
+endif
+
+ifndef PROFILE_VIEWER
+    $(error PROFILE_VIEWER must be specified!)
+endif
+

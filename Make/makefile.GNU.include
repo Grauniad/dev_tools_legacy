@@ -5,7 +5,18 @@ DEFAULT_CPPSTD=gnu++98
 
 COMPILER_CPP11=c++11
 COMPILER_ALL_WARNINGS=-Wall
-COMPILER_FATAL_WARNINGS=-Wall
+COMPILER_FATAL_WARNINGS=-Werror
 COMPILER_COVERAGE=--coverage
 
+PROFILE_COMMAND=gprof $$test > $(EXPORT_PROFILE_DIR)/$$(basename $$test).profile  || exit;
+PROFILE_GEN_COMMAND=$(SCRIPTS_DIR)/prof2html.py $(EXPORT_PROFILE_DIR)/$$(basename $$test).profile || exit;
+PROFILE_VIEWER=$(WEB_VIEWER) $(EXPORT_PROFILE_DIR)index.html
+
 CPP=g++
+
+COVER_FILE=index.html
+
+GEN_COVER: 
+	lcov --capture --directory $(PROJECT_ROOT_DIR) --output-file $(EXPORT_COVER_DIR)test.info
+	genhtml -f --demangle-cpp  --legend --num-spaces 4 -s $(EXPORT_COVER_DIR)test.info --output-directory $(EXPORT_COVER_DIR)
+
