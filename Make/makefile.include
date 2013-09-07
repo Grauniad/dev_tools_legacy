@@ -239,11 +239,14 @@ ifdef BUILD_TIME_TESTS
      testCmd=BUILD_PROFILE_PAGE
    endif
    BUILD_DEPS+=$(testCmd)
-   TESTS_TO_BUILD=$(addprefix $(EXPORT_TESTS_TO),$(BUILD_TIME_TESTS))
-   TESTS_TO_RUN=$(TESTS_TO_BUILD)
-   FILES_TO_CLEAN+=$(TESTS_TO_BUILD)
-   FILES_TO_CLEAN+=$(shell ls *.gcda 2> /dev/null)
-   FILES_TO_CLEAN+=$(shell ls *.gcno 2> /dev/null)
+   ifneq ($(findstring notests,$(MAKECMDGOALS)),notests)
+       TESTS_TO_BUILD=$(addprefix $(EXPORT_TESTS_TO),$(BUILD_TIME_TESTS))
+       TESTS_TO_RUN=$(TESTS_TO_BUILD)
+       FILES_TO_CLEAN+=$(TESTS_TO_BUILD)
+       FILES_TO_CLEAN+=$(shell ls *.gcda 2> /dev/null)
+       FILES_TO_CLEAN+=$(shell ls *.gcno 2> /dev/null)
+   endif
+
 endif
 
 ifdef LINKED_LIBS
@@ -268,6 +271,7 @@ memtest: all
 gdbtest: all
 cover: all 
 profile: all
+notests: all
 coverbuild: GEN_COVER
 coverview: VIEW_COVER
 
