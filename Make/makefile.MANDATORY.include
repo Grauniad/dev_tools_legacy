@@ -1,0 +1,33 @@
+# Compiler
+ifndef CPP
+    $(error CPP must be specified!)
+endif
+
+# Default flags
+ifndef DEFAULT_DEBUG_FLAGS
+    $(error DEFAULT_DEBUG_FLAGS must be specified!)
+endif
+ifndef DEFAULT_RELEASE_FLAGS
+    $(error DEFAULT_RELEASE_FLAGS must be specified!)
+endif
+ifndef DEFAULT_CPP_PROFILE_FLAGS
+    $(error DEFAULT_CPP_PROFILE_FLAGS must be specified!)
+endif
+ifndef DEFAULT_CPPSTD
+    $(error DEFAULT_CPPSTD must be specified!)
+endif
+
+# Specific flags
+ifndef COMPILER_CPP11
+    $(error COMPILER_CPP11 must be specified!)
+endif
+ifndef COMPILER_ALL_WARNINGS
+    $(error COMPILER_ALL_WARNINGS must be specified!)
+endif
+ifndef COMPILER_FATAL_WARNINGS
+    $(error COMPILER_FATAL_WARNINGS must be specified!)
+endif
+ifndef COMPILER_COVERAGE
+    $(error COMPILER_COVERAGE must be specified!)
+endif
+

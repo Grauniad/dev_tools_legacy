@@ -7,7 +7,8 @@
 #ADDITIONAL_INCLUDE_FLAGS=
 #ADDITIONAL_TEST_CPP_FLAGS=
 
-#Define the base directories
+
+# Must be specified by the outer makefile-include
 ifndef PROJECT_ROOT_DIR
    $(error PROJECT_ROOT_DIR must be specified!)
 endif
@@ -15,6 +16,15 @@ endif
 ifndef DEV_TOOLS_DIR
    $(error DEV_TOOLS_DIR must point to the root of the dev_tools depot)
 endif
+
+# Load common defaults
+include $(DEV_TOOLS_DIR)/Make/makefile.COMMON.include
+
+# Load compiler specific flags
+include $(DEV_TOOLS_DIR)/Make/makefile.GNU.include
+
+# Validate variables
+include $(DEV_TOOLS_DIR)/Make/makefile.MANDATORY.include
 
 EXPORTS_DIR=$(PROJECT_ROOT_DIR)exports/
 SCRIPTS_DIR=$(DEV_TOOLS_DIR)Scripts/
@@ -45,17 +55,19 @@ endif
 # Compilation variables
 #
 ifndef DEBUG_FLAGS
-    DEBUG_FLAGS=-ggdb
+    DEBUG_FLAGS=$(DEFAULT_DEBUG_FLAGS)
 endif
 
 ifndef RELEASE_FLAGS
-   RELEASE_FLAGS=-O2 -march=native
+   RELEASE_FLAGS=$(DEFAULT_RELEASE_FLAGS)
 endif
 
-CPPSTD=gnu++98 #(overridden by USE_CPP11)
+ifndef CPPSTD
+    CPPSTD=$(DEFAULT_CPPSTD) #(overridden by USE_CPP11)
+endif
 
 ifeq ($(USE_CPP11),YES)
-  CPPSTD=c++11
+  CPPSTD=$(COMPILER_CPP11)
 endif
 
 ifeq ($(findstring debug,$(MAKECMDGOALS)),debug)
@@ -71,6 +83,11 @@ endif
 # Set to YES to enable
 ifndef DEBUG_ON
     DEBUG_ON=YES
+endif
+
+# Set to YES to enable
+ifndef RELEASE_ON
+    RELEASE_ON=NO
 endif
 
 # If yes, build will if any warnings are raised
@@ -133,7 +150,7 @@ ifndef GDB_OPTIONS
 endif
 
 ifndef CORE_SIZE
-   CORE_SIZE=1048576
+   CORE_SIZE=$(DEFAULT_CORE_SIZE)
 endif
 
 #
@@ -157,11 +174,11 @@ else
 endif
 
 ifndef CPP_PROFILE_FLAGS
-    CPP_PROFILE_FLAGS=-pg -O2 -march=native
+    CPP_PROFILE_FLAGS=$(DEFAULT_CPP_PROFILE_FLAGS)
 endif
 
 ifndef PROFILE_SECS
-  PROFILE_SECS=5
+  PROFILE_SECS=$(DEFAULT_PROFILE_SECS)
 endif
 
 ifeq ($(findstring profile,$(MAKECMDGOALS)),profile)
@@ -170,11 +187,11 @@ ifeq ($(findstring profile,$(MAKECMDGOALS)),profile)
 endif
 
 ifeq ($(FATAL_WARNINGS),YES)
-  CPP_FLAGS+=-Werror
+  CPP_FLAGS+=$(COMPILER_FATAL_WARNINGS)
 endif
 
 ifeq ($(ALL_WARNINGS),YES)
-  CPP_FLAGS+=-Wall
+  CPP_FLAGS+=$(COMPILER_ALL_WARNINGS)
 endif
 
 ifeq ($(DEBUG_ON),YES)
@@ -187,10 +204,11 @@ endif
 
 
 ifeq ($(findstring cover,$(MAKECMDGOALS)),cover)
-   CPP_FLAGS+=--coverage
+   CPP_FLAGS+=$(COMPILER_COVERAGE)
 endif
 
 
+#TODO:
 CPP_FLAGS+=-std=$(CPPSTD)
 
 # calculate variables used for macros 
@@ -305,7 +323,7 @@ clean: FOLDERS_TO_CLEAN
 	$(CLEAN_CMD)
 
 EXEC: $(TO_BUILD) $(LINKED_FILES)
-	g++ $(CPP_FLAGS) -o $(EXEC_TO_BUILD) $(TO_BUILD) $(LINKED_FILES)
+	$(CPP) $(CPP_FLAGS) -o $(EXEC_TO_BUILD) $(TO_BUILD) $(LINKED_FILES)
 
 VIEW_COVERAGE:
 	@if [ "$(SOURCES)" != "" ]; \
@@ -408,7 +426,7 @@ VIEW_COVER:
 
 
 $(EXPORT_TESTS_TO)%: %.cpp $(LINKED_FILES)
-	g++ $(CPP_FLAGS) $(TEST_CPP_FLAGS) -o $@ $+ $(LINKED_FILES)
+	$(CPP) $(CPP_FLAGS) $(TEST_CPP_FLAGS) -o $@ $+ $(LINKED_FILES)
 
 # Macro for building STATIC libraries
 $(LIB_TO_BUILD): $(TO_BUILD)
@@ -424,7 +442,7 @@ $(EXPORT_OBJS_DIR)%.cpp: %.cpp
 
 # Macro for building object files
 $(EXPORT_OBJS_DIR)%.o: %.cpp
-	g++  $(CPP_FLAGS) -c -o $@ $+
+	$(CPP)  $(CPP_FLAGS) -c -o $@ $+
 
 ifneq ($(strip $(CPP_TAGS_TO_BUILD)),)
 #rebuild the tags file if anything has changed
@@ -453,20 +471,22 @@ usage:
 	@echo "    <$(CPP_TAGS_FILE)>"
 	@echo ""
 	@echo "        Compiler Options"
-	@echo "ADDITIONAL_INCLUDE_FLAGS:  ()        Add extra include directories                              <$(ADDITIONAL_INCLUDE_FLAGS)>"
-	@echo "ADDITIONAL_TEST_CPP_FLAGS: ()        Add extra flags used when compiling test binaries          <$(ADDITIONAL_INCLUDE_FLAGS)>"
-	@echo "ALL_WARNINGS               (YES)     Set to NO to turn off warnings for questionable code       <$(ALL_WARNINGS)>"
-	@echo "CORE_SIZE         (1048576KB [1GB])  Max allowed size of genereated core files                  <$(CORE_SIZE)>"
-	@echo "CPPSTD:                    (gnu++98) SetSet the C++ standard to be used by g++, e.g             <$(CPPSTD)>"
-	@echo "CPP_FLAGS:                 ()        Flags passed to g++                                        <$(CPP_FLAGS)>" 
-	@echo "CPP_PROFILE_FLAGS          (-pg -O2 -march=native) CPP Flags used when profiling.               <$(CPP_PROFILE_FLAGS)>"
-	@echo "DEBUG_FLAGS:               (-ggdb)   Flags to the compiler when debugging is enabled            <$(DEBUG_FLAGS)>"
-	@echo "DEBUG_ON:                  (YES)     To disable debug symbols: export DEBUG_ON=FALSE            <$(DEBUG_ON)>"
-	@echo "FATAL_WARNINGS             (YES)     Set to NO to prevent compiler warnings breaking the build  <$(FATAL_WARNINGS)>"
-	@echo "PROFILE_SECS               (5)       Minimum time a test must run for when profiling            <$(PROFILE_SECS)>"
-	@echo "RELEASE_FLAGS   (-O2 -march=native)  Flags to the compiler when release build is enabled        <$(RELEASE_FLAGS)>"
-	@echo "RELEASE_ON:                (YES)     Enable release optimizations,                              <$(RELEAE_ON)>"
-	@echo "USE_CPP11:                 (NO)      To use the CPP11 std, set USE_CPP11=YES                    <$(USE_CPP11)>"
+	@echo "COMPILER: $(CPP)"
+	@echo ""
+	@echo "ADDITIONAL_INCLUDE_FLAGS:  Add extra include directories - (), <$(ADDITIONAL_INCLUDE_FLAGS)>"
+	@echo "ADDITIONAL_TEST_CPP_FLAGS: Add extra flags used when compiling test binaries - (), <$(ADDITIONAL_INCLUDE_FLAGS)>"
+	@echo "ALL_WARNINGS               Set to NO to turn off warnings for questionable code - (YES), <$(ALL_WARNINGS)>"
+	@echo "CORE_SIZE                  Max allowed size of genereated core files - ($(DEFAULT_CORE_SIZE)), <$(CORE_SIZE)>"
+	@echo "CPPSTD:                    Set the C++ standard to be used by $(CPP) - ($(DEFAULT_CPPSTD)), <$(CPPSTD)>"
+	@echo "CPP_FLAGS:                 Flags passed to $(CPP) - (), <$(CPP_FLAGS)>" 
+	@echo "CPP_PROFILE_FLAGS          Flags used when profiling - ($(DEFAULT_CPP_PROFILE_FLAGS)), <$(CPP_PROFILE_FLAGS)>"
+	@echo "DEBUG_FLAGS:               Flags to $(CPP) when debugging is enabled - ($(DEFAULT_DEBUG_FLAGS)), <$(DEBUG_FLAGS)>"
+	@echo "DEBUG_ON:                  To disable debug symbols: export DEBUG_ON=FALSE - (YES), <$(DEBUG_ON)>"
+	@echo "FATAL_WARNINGS             Set to NO to prevent compiler warnings becomings errors - (YES), <$(FATAL_WARNINGS)>"
+	@echo "PROFILE_SECS               Minimum time a test must run for when profiling - ($(DEFAULT_PROFILE_SECS)), <$(PROFILE_SECS)>"
+	@echo "RELEASE_FLAGS              Flags to $(CPP)when release build is enabled -  ($(DEFAULT_RELEASE_FLAGS)), <$(RELEASE_FLAGS)>"
+	@echo "RELEASE_ON:                Enable release optimizations - (NO), <$(RELEAE_ON)>"
+	@echo "USE_CPP11:                 To use the CPP11 std, set USE_CPP11=YES - (NO), <$(USE_CPP11)>"
 	@echo ""
 	@echo "        CTAGS"
 	@echo "CTAGS:                    (ctags)   Set the ctags executable <$(CTAGS)>"
