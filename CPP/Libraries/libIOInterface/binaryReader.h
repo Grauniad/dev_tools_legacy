@@ -83,8 +83,9 @@ public:
     virtual operator long() const { return offset;}
 
     virtual long Size() const { return file.Size(); }
-private: 
+protected:
     const FileLikeReader& file;
+private: 
     long offset;
 };
 

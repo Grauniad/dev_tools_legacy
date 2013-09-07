@@ -68,8 +68,9 @@ public:
     virtual long& Offset() {return offset;}
     virtual long Offset() const {return offset;}
     virtual operator long() const { return offset;}
-private: 
+protected:
     FileLikeWriter& file;
+private: 
     long offset;
 };
 #include "binaryWriter.hpp"

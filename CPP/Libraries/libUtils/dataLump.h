@@ -5,7 +5,7 @@
 #include "fileLikeObject.h"
 
 
-template<int size>
+template<unsigned long size>
 class DataLump: public FileLikeObject
                                    
 {
