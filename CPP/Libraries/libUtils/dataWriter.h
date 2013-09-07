@@ -2,7 +2,7 @@
 #define DATA_WRITER_H
 #include "binaryWriter.h"
 #include <cstring>
-class DataWriter : public virtual FileLikeWriter{
+class DataWriter : public FileLikeWriter{
 public:
     DataWriter(void *);
     // Note these can only actually be in-lined when the compiler knows 

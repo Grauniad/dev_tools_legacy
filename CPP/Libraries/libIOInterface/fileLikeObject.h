@@ -4,7 +4,7 @@
 #include "binaryWriter.h"
 
 // pure virtual class that defines both interfaces
-class FileLikeObject : virtual public FileLikeWriter, virtual public FileLikeReader {
+class FileLikeObject : public FileLikeWriter, public FileLikeReader {
 };
 
 #endif

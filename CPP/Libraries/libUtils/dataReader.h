@@ -3,7 +3,7 @@
 #include "binaryReader.h"
 #include <cstring>
 
-class DataReader : public virtual FileLikeReader{
+class DataReader : public FileLikeReader{
 public:
     DataReader(void *, long len);
 
