@@ -64,6 +64,10 @@ ifndef RELEASE_FLAGS
    RELEASE_FLAGS=$(DEFAULT_RELEASE_FLAGS)
 endif
 
+ifndef FAST_FLAGS
+   FAST_FLAGS=$(DEFAULT_FAST_FLAGS)
+endif
+
 ifndef CPPSTD
     CPPSTD=$(DEFAULT_CPPSTD) #(overridden by USE_CPP11)
 endif
@@ -75,11 +79,19 @@ endif
 ifeq ($(findstring debug,$(MAKECMDGOALS)),debug)
    DEBUG_ON=YES
    RELEASE_ON=NO
+   FAST_ON=NO
 endif
 
 ifeq ($(findstring release,$(MAKECMDGOALS)),release)
    DEBUG_ON=NO
    RELEASE_ON=YES
+   FAST_ON=NO
+endif
+
+ifeq ($(findstring fast,$(MAKECMDGOALS)),fast)
+   DEBUG_ON=NO
+   RELEASE_ON=NO
+   FAST_ON=YES
 endif
 
 # Set to YES to enable
@@ -89,6 +101,9 @@ endif
 
 # Set to YES to enable
 ifndef RELEASE_ON
+    RELEASE_ON=NO
+endif
+ifndef FAST_ON
     RELEASE_ON=NO
 endif
 
@@ -204,13 +219,15 @@ ifeq ($(RELEASE_ON),YES)
   CPP_FLAGS+=$(RELEASE_FLAGS)
 endif
 
+ifeq ($(FAST_ON),YES)
+  CPP_FLAGS+=$(FAST_FLAGS)
+endif
+
 
 ifeq ($(findstring cover,$(MAKECMDGOALS)),cover)
    CPP_FLAGS+=$(COMPILER_COVERAGE)
 endif
 
-
-#TODO:
 CPP_FLAGS+=-std=$(CPPSTD)
 
 # calculate variables used for macros 
@@ -320,6 +337,7 @@ profile: all
 notests: all
 debug: all
 release: all
+fast: all
 coverbuild: GEN_COVER
 coverview: VIEW_COVER
 
@@ -486,10 +504,12 @@ usage:
 	@echo "CPP_PROFILE_FLAGS          Flags used when profiling - ($(DEFAULT_CPP_PROFILE_FLAGS)), <$(CPP_PROFILE_FLAGS)>"
 	@echo "DEBUG_FLAGS:               Flags to $(CPP) when debugging is enabled - ($(DEFAULT_DEBUG_FLAGS)), <$(DEBUG_FLAGS)>"
 	@echo "DEBUG_ON:                  To disable debug symbols: export DEBUG_ON=FALSE - (YES), <$(DEBUG_ON)>"
+	@echo "FAST_FLAGS                 Flags to $(CPP)when fast build is enabled (Enable dangerous optimizations) -  ($(DEFAULT_FAST_FLAGS)), <$(FAST_FLAGS)>"
+	@echo "FAST_ON:                   Do everything to enhance performance, including dangerous optimizations - (NO), <$(FAST_ON)>"
 	@echo "FATAL_WARNINGS             Set to NO to prevent compiler warnings becomings errors - (YES), <$(FATAL_WARNINGS)>"
 	@echo "PROFILE_SECS               Minimum time a test must run for when profiling - ($(DEFAULT_PROFILE_SECS)), <$(PROFILE_SECS)>"
 	@echo "RELEASE_FLAGS              Flags to $(CPP)when release build is enabled -  ($(DEFAULT_RELEASE_FLAGS)), <$(RELEASE_FLAGS)>"
-	@echo "RELEASE_ON:                Enable release optimizations - (NO), <$(RELEAE_ON)>"
+	@echo "RELEASE_ON:                Enable release optimizations - (NO), <$(RELEASE_ON)>"
 	@echo "USE_CPP11:                 To use the CPP11 std, set USE_CPP11=YES - (NO), <$(USE_CPP11)>"
 	@echo ""
 	@echo "        CTAGS"

@@ -13,6 +13,9 @@ endif
 ifndef DEFAULT_RELEASE_FLAGS
     $(error DEFAULT_RELEASE_FLAGS must be specified!)
 endif
+ifndef DEFAULT_FAST_FLAGS
+    $(error DEFAULT_FAST_FLAGS must be specified!)
+endif
 ifndef DEFAULT_CPP_PROFILE_FLAGS
     $(error DEFAULT_CPP_PROFILE_FLAGS must be specified!)
 endif
