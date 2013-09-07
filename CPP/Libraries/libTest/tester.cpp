@@ -79,10 +79,9 @@ void Test::RunTest() {
     cout << description << ": ";
     testLogger log;
     startTime.SetNow();
-    #ifdef __PROFILE__TESTS
-        auto start = clock();
-    #endif
+    auto start = clock();
     int result = testLogged(log);
+    auto stop = clock();
     #ifdef __PROFILE__TESTS
         // we don't want to mess around in the invoke function
         using TestPtr = int(*)(testLogger&);
@@ -109,10 +108,11 @@ void Test::RunTest() {
             }
         }
     #endif
+    double duration = double(stop - start) / CLOCKS_PER_SEC;
     if (result == 0 ) {
-        cout << "TEST PASSED" << endl;
+        cout << "TEST PASSED in " << duration << " seconds" <<  endl;
     } else {
-        cout << "TEST FAILED" << endl;
+        cout << "TEST FAILED in " << duration << " seconds" <<  endl;
         cout << "Run Time Log:" << endl;
         cout << "Test Log follows: " << endl;
         cout << log.str() << endl;
