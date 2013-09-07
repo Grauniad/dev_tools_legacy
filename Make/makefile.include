@@ -115,6 +115,10 @@ ifndef GDB_OPTIONS
    GDB_OPTIONS+=-return-child-result
 endif
 
+ifndef CORE_SIZE
+   CORE_SIZE=1048576
+endif
+
 #
 # Build up cpp flags
 # 
@@ -139,11 +143,12 @@ ifndef CPP_PROFILE_FLAGS
     CPP_PROFILE_FLAGS=-pg -O2 -march=native
 endif
 
+ifndef PROFILE_SECS
+  PROFILE_SECS=5
+endif
+
 ifeq ($(findstring profile,$(MAKECMDGOALS)),profile)
    CPP_FLAGS+=-D__PROFILE__TESTS -D__PROFILE_CLOCK_SECS__=$(PROFILE_SECS) $(CPP_PROFILE_FLAGS)
-   ifndef PROFILE_SECS
-      PROFILE_SECS=5
-   endif
    DEBUG_ON=FALSE
 endif
 
@@ -300,7 +305,7 @@ BUILD_FOLDERS :
 	done
 
 RUN_AUTO_TEST: BUILD_AUTO_TESTS
-	@ulimit -c unlimited; \
+	@ulimit -c $(CORE_SIZE); \
 	for test in $(TESTS_TO_RUN); do \
 		if [ -e core ]; then \
 			rm core;\
@@ -309,7 +314,7 @@ RUN_AUTO_TEST: BUILD_AUTO_TESTS
 		rm -f FullLog_*; \
 		echo "***********************************************************"; \
 		echo "Running auto test: $$test";\
-		$$test || if [ -e core ]; then gdb $$test core; exit; else exit; fi;\
+		$$test || if [ -e core ]; then gdb -tui $$test core; exit; else exit; fi;\
 		echo "************************************************************"; \
 	done
 
@@ -341,10 +346,14 @@ GDB_AUTO_TESTS: BUILD_AUTO_TESTS
 	echo "***********************************************************"; \
 
 PROFILE_TESTS: BUILD_AUTO_TESTS
-	@for test in $(TESTS_TO_RUN); do\
+	@ulimit -c $(CORE_SIZE); \
+	for test in $(TESTS_TO_RUN); do\
 		echo "***********************************************************"; \
+		if [ -e core ]; then \
+			rm core;\
+		fi;\
 		echo "Running auto test: $$test";\
-		     $$test || exit;\
+		     $$test || if [ -e core ]; then gdb -tui $$test core; exit; else exit; fi; \
 		echo "Profiling: $$test";\
 		     gprof $$test > $(EXPORT_PROFILE_DIR)/$$(basename $$test).profile  || exit;\
 		echo "Generating profile html";\
@@ -417,14 +426,16 @@ usage:
 	@echo "    <$(CPP_TAGS_FILE)>"
 	@echo ""
 	@echo "        Compiler Options"
-	@echo "ADDITIONAL_INCLUDE_FLAGS:  ()        Add extra inclue directories                               <$(ADDITIONAL_INCLUDE_FLAGS)>"
-	@echo "ADDITIONAL_TEST_CPP_FLAGS: ()        Add extra inclue directories                               <$(ADDITIONAL_INCLUDE_FLAGS)>"
+	@echo "ADDITIONAL_INCLUDE_FLAGS:  ()        Add extra include directories                              <$(ADDITIONAL_INCLUDE_FLAGS)>"
+	@echo "ADDITIONAL_TEST_CPP_FLAGS: ()        Add extra flags used when compiling test binaries          <$(ADDITIONAL_INCLUDE_FLAGS)>"
+	@echo "ALL_WARNINGS               (YES)     Set to NO to turn off warnings for questionable code       <$(ALL_WARNINGS)>"
 	@echo "CPPSTD:                    (gnu++98) SetSet the C++ standard to be used by g++, e.g             <$(CPPSTD)>"
 	@echo "CPP_FLAGS:                 ()        Flags passed to g++                                        <$(CPP_FLAGS)>" 
 	@echo "CPP_PROFILE_FLAGS          (-pg -O2 -march=native) CPP Flags used when profiling.               <$(CPP_PROFILE_FLAGS)>"
 	@echo "DEBUG_ON:                  (YES)     To disable debug symbols: export DEBUG_ON=FALSE            <$(DEBUG_ON)>"
 	@echo "FATAL_WARNINGS             (YES)     Set to NO to prevent compiler warnings breaking the build  <$(FATAL_WARNINGS)>"
-	@echo "ALL_WARNINGS               (YES)     Set to NO to turn off warnings for questionable code       <$(ALL_WARNINGS)>"
+	@echo "PROFILE_SECS               (5)       Minimum time a test must run for when profiling            <$(PROFILE_SECS)>"
+	@echo "CORE_SIZE         (1048576KB [1GB])  Max allowed size of genereated core files                  <$(CORE_SIZE)>"
 	@echo "USE_CPP11:                 (NO)      To use the CPP11 std, set USE_CPP11=YES                    <$(USE_CPP11)>"
 	@echo ""
 	@echo "        CTAGS"
