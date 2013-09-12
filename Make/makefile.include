@@ -4,6 +4,10 @@
  
 target: all
 
+ifndef MODE
+   $(warning MODE has not been specified: assuming CPP)
+   MODE=CPP
+endif 
 
 # Must be specified by the outer makefile-include
 ifndef PROJECT_ROOT_DIR
@@ -32,11 +36,14 @@ endif
 # Load common defaults
 include $(DEV_TOOLS_DIR)/Make/makefile.COMMON.include
 
+
 # Load compiler specific flags
 ifndef TOOL_CHAIN
    TOOL_CHAIN=$(DEFAULT_TOOL_CHAIN)
 endif
-include $(DEV_TOOLS_DIR)/Make/makefile.$(TOOL_CHAIN).include
+include $(DEV_TOOLS_DIR)/Make/Compilers/makefile.$(TOOL_CHAIN).include
+
+include $(DEV_TOOLS_DIR)/Make/Languages/makefile.$(MODE).include
 
 # Validate variables
 include $(DEV_TOOLS_DIR)/Make/makefile.MANDATORY.include
@@ -68,13 +75,7 @@ ifndef FAST_FLAGS
    FAST_FLAGS=$(DEFAULT_FAST_FLAGS)
 endif
 
-ifndef CPPSTD
-    CPPSTD=$(DEFAULT_CPPSTD) #(overridden by USE_CPP11)
-endif
 
-ifeq ($(USE_CPP11),YES)
-  CPPSTD=$(COMPILER_CPP11)
-endif
 
 ifeq ($(findstring debug,$(MAKECMDGOALS)),debug)
    DEBUG_ON=YES
@@ -114,21 +115,6 @@ endif
 
 ifndef ALL_WARNINGS
    ALL_WARNINGS=YES
-endif
-
-ifndef USE_CPP11
-   USE_CPP11=NO
-endif
-
-
-#
-#  CONFIGURE TAGS
-#
-ifndef CTAGS
-    CTAGS=ctags
-endif
-ifndef
-    CTAGS_FLAGS=-R --sort=1 --c++-kinds=+p --fields=+iaS --extra=+q --language-force=C++ --tag-relative=no
 endif
 
 
@@ -171,27 +157,27 @@ ifndef CORE_SIZE
 endif
 
 #
-# Build up cpp flags
+# Build up compiler flags
 # 
 # These should be configured above
 # DO NOT CHANGE THESE UNLESS YOU KNOW WHAT YOU ARE DOING
-INCLUDE_FLAGS=-I$(EXPORT_INCLUDES_DIR)
+INCLUDE_FLAGS=-I$(EXPORT_INCLUDES_DIR) -I$(CURDIR)
 INCLUDE_FLAGS+=$(ADDITIONAL_INCLUDE_FLAGS)
 
 # Expose libDefer to the test framework
 # Make the defer header available for use in test scripts
-TEST_CPP_FLAGS=-I$(LINKER_DIR)Libraries/libDefer/
-TEST_CPP_FLAGS+=$(ADDITIONAL_TEST_CPP_FLAGS)
+TEST_COMP_FLAGS=-I$(LINKER_DIR)Libraries/libDefer/
+TEST_COMP_FLAGS+=$(ADDITIONAL_TEST_COMP_FLAGS)
 
 
-ifdef CPP_FLAGS
-    CPP_FLAGS+=$(INCLUDE_FLAGS)
+ifdef COMP_FLAGS
+    COMP_FLAGS+=$(INCLUDE_FLAGS)
 else
-    CPP_FLAGS=$(INCLUDE_FLAGS)
+    COMP_FLAGS=$(INCLUDE_FLAGS)
 endif
 
-ifndef CPP_PROFILE_FLAGS
-    CPP_PROFILE_FLAGS=$(DEFAULT_CPP_PROFILE_FLAGS)
+ifndef COMP_PROFILE_FLAGS
+    COMP_PROFILE_FLAGS=$(DEFAULT_COMP_PROFILE_FLAGS)
 endif
 
 ifndef PROFILE_SECS
@@ -199,46 +185,46 @@ ifndef PROFILE_SECS
 endif
 
 ifeq ($(findstring profile,$(MAKECMDGOALS)),profile)
-   CPP_FLAGS+=-D__PROFILE__TESTS -D__PROFILE_CLOCK_SECS__=$(PROFILE_SECS) $(CPP_PROFILE_FLAGS)
+   COMP_FLAGS+=-D__PROFILE__TESTS -D__PROFILE_CLOCK_SECS__=$(PROFILE_SECS) $(COMP_PROFILE_FLAGS)
    DEBUG_ON=FALSE
 endif
 
 ifeq ($(FATAL_WARNINGS),YES)
-  CPP_FLAGS+=$(COMPILER_FATAL_WARNINGS)
+  COMP_FLAGS+=$(COMPILER_FATAL_WARNINGS)
 endif
 
 ifeq ($(ALL_WARNINGS),YES)
-  CPP_FLAGS+=$(COMPILER_ALL_WARNINGS)
+  COMP_FLAGS+=$(COMPILER_ALL_WARNINGS)
 endif
 
 ifeq ($(DEBUG_ON),YES)
-  CPP_FLAGS+=$(DEBUG_FLAGS)
+  COMP_FLAGS+=$(DEBUG_FLAGS)
 endif
 
 ifeq ($(RELEASE_ON),YES)
-  CPP_FLAGS+=$(RELEASE_FLAGS)
+  COMP_FLAGS+=$(RELEASE_FLAGS)
 endif
 
 ifeq ($(FAST_ON),YES)
-  CPP_FLAGS+=$(FAST_FLAGS)
+  COMP_FLAGS+=$(FAST_FLAGS)
 endif
 
 
 ifeq ($(findstring cover,$(MAKECMDGOALS)),cover)
-   CPP_FLAGS+=$(COMPILER_COVERAGE)
+   COMP_FLAGS+=$(COMPILER_COVERAGE)
 endif
 
-CPP_FLAGS+=-std=$(CPPSTD)
+COMP_FLAGS+=-std=$(STD)
 
 # calculate variables used for macros 
 # DO NOT CHANGE THESE UNLESS YOU KNOW WHAT YOU ARE DOING
 BUILD_DEPS=BUILD_FOLDERS 
+POST_BUILD_DEPS=
 TO_CLEAN=FOLDERS_TO_CLEAN FILES_TO_CLEAN
 TO_BUILD=
 FILES_TO_CLEAN=
 FOLDERS_TO_CLEAN=
 LINKED_FILES=
-CPP_TAGS_TO_BUILD=
 TO_COPY=
 
 ifeq ($(findstring cover,$(MAKECMDGOALS)),cover)
@@ -247,10 +233,10 @@ endif
 
 ifdef SOURCES
    $(shell mkdir -p $(EXPORT_OBJS_DIR))
-   TO_BUILD+=$(addprefix $(EXPORT_OBJS_DIR),$(SOURCES:%.cpp=%.o))
-   FILES_TO_CLEAN+=$(addprefix $(EXPORT_OBJS_DIR),$(SOURCES:%.cpp=%.gcno))
-   FILES_TO_CLEAN+=$(addprefix $(EXPORT_OBJS_DIR),$(SOURCES:%.cpp=%.gcda))
-   FILES_TO_CLEAN+=$(addprefix $(EXPORT_OBJS_DIR),$(SOURCES:%.cpp=%.o))
+   TO_BUILD+=$(addprefix $(EXPORT_OBJS_DIR),$(SOURCES:%$(SOURCE_EXTENSION)=%.o))
+   FILES_TO_CLEAN+=$(addprefix $(EXPORT_OBJS_DIR),$(SOURCES:%$(SOURCE_EXTENSION)=%.gcno))
+   FILES_TO_CLEAN+=$(addprefix $(EXPORT_OBJS_DIR),$(SOURCES:%$(SOURCE_EXTENSION)=%.gcda))
+   FILES_TO_CLEAN+=$(addprefix $(EXPORT_OBJS_DIR),$(SOURCES:%$(SOURCE_EXTENSION)=%.o))
    FILES_TO_CLEAN+=$(shell ls *.gcov 2> /dev/null)
     ifeq ($(findstring cover,$(MAKECMDGOALS)),cover)
         FILES_TO_CLEAN+=$(addprefix $(EXPORT_OBJS_DIR),$(SOURCES))
@@ -261,7 +247,7 @@ endif
 ifdef EXPORT_INCLUDES
    $(shell mkdir -p $(EXPORT_INCLUDES_DIR))
    EXPORTED_INCLUDES=$(addprefix $(EXPORT_INCLUDES_DIR),$(EXPORT_INCLUDES))
-   BUILD_DEPS+=$(EXPORTED_INCLUDES)
+   POST_BUILD_DEPS+=$(EXPORTED_INCLUDES)
    FILES_TO_CLEAN+=$(EXPORTED_INCLUDES)
 endif
 
@@ -311,25 +297,31 @@ ifdef LINKED_LIBS
    LINKED_FILES+=$(addprefix $(EXPORT_LIB_DIR),$(addsuffix .a,$(LINKED_LIBS)))
 endif
 
-ifdef CPP_TAGS_FILE
-   $(shell mkdir -p $(EXPORT_TAGS_DIR))
-   CPP_TAGS_TO_BUILD=$(EXPORT_TAGS_DIR)$(CPP_TAGS_FILE)
-   BUILD_DEPS+=$(CPP_TAGS_TO_BUILD)
-endif
 
 ifeq ($(strip $(FILES_TO_CLEAN)),)
     CLEAN_CMD=@echo "nothing to clean"
 else
-    CLEAN_CMD=rm $(FILES_TO_CLEAN)
+    CLEAN_CMD=rm -f $(FILES_TO_CLEAN)
 endif
 
+ifdef TAGS_FILE
+   $(shell mkdir -p $(EXPORT_TAGS_DIR))
+   TAGS_TO_BUILD=$(EXPORT_TAGS_DIR)$(TAGS_FILE)
+   BUILD_DEPS+=$(TAGS_TO_BUILD)
+endif
+
+# Allow shutting down a folder based on a TOOL_CHAIN
 ifdef NO_$(TOOL_CHAIN)
    BUILD_DEPS=
+   POST_BUILD_DEPS=
    TO_COPY=
+   FOLDERS_TO_BUILD=
+   FOLDERS_TO_CLEAN=
+   $(warning Skipping directory $(CURDIR) due to NO_$(TOOL_CHAIN) specification)
 endif
 
 
-all: $(BUILD_DEPS) $(TO_COPY)
+all: $(BUILD_DEPS) $(TO_COPY) $(POST_BUILD_DEPS)
 memtest: all
 gdbtest: all
 cover: all 
@@ -341,6 +333,7 @@ fast: all
 coverbuild: GEN_COVER
 coverview: VIEW_COVER
 
+
 profileview:
 	$(PROFILE_VIEWER)
 
@@ -348,7 +341,7 @@ clean: FOLDERS_TO_CLEAN
 	$(CLEAN_CMD)
 
 EXEC: $(TO_BUILD) $(LINKED_FILES)
-	$(CPP) $(CPP_FLAGS) -o $(EXEC_TO_BUILD) $(TO_BUILD) $(LINKED_FILES)
+	$(COMP) $(COMP_FLAGS) -o $(EXEC_TO_BUILD) $(TO_BUILD) $(LINKED_FILES)
 
 VIEW_COVERAGE:
 	@if [ "$(SOURCES)" != "" ]; \
@@ -447,8 +440,8 @@ VIEW_COVER:
 	$(WEB_VIEWER) $(EXPORT_COVER_DIR)$(COVER_FILE)
 
 
-$(EXPORT_TESTS_TO)%: %.cpp $(LINKED_FILES)
-	$(CPP) $(CPP_FLAGS) $(TEST_CPP_FLAGS) -o $@ $+ $(LINKED_FILES)
+$(EXPORT_TESTS_TO)%: %$(SOURCE_EXTENSION) $(LINKED_FILES)
+	$(COMP) $(COMP_FLAGS) $(TEST_COMP_FLAGS) -o $@ $+ $(LINKED_FILES)
 
 # Macro for building STATIC libraries
 $(LIB_TO_BUILD): $(TO_BUILD)
@@ -459,18 +452,20 @@ $(EXPORT_INCLUDES_DIR)%: %
 	cp $+ $@
 
 # Macro for copying source code when using coverage testing
-$(EXPORT_OBJS_DIR)%.cpp: %.cpp
+$(EXPORT_OBJS_DIR)%$(SOURCE_EXTENSION): %$(SOURCE_EXTENSION)
 	cp $+ $@
 
 # Macro for building object files
-$(EXPORT_OBJS_DIR)%.o: %.cpp
-	$(CPP)  $(CPP_FLAGS) -c -o $@ $+
+$(EXPORT_OBJS_DIR)%.o: %$(SOURCE_EXTENSION)
+	$(COMP)  $(COMP_FLAGS) -c -o $@ $+
 
-ifneq ($(strip $(CPP_TAGS_TO_BUILD)),)
+# TAGS
+ifneq ($(strip $(TAGS_TO_BUILD)),)
 #rebuild the tags file if anything has changed
-$(CPP_TAGS_TO_BUILD): $(subst $(CPP_TAGS_TO_BUILD),,$(BUILD_DEPS))
-	$(CTAGS) $(CTAGS_FLAGS) -f $(CPP_TAGS_TO_BUILD) $(PWD)
+$(TAGS_TO_BUILD): $(subst $(TAGS_TO_BUILD),,$(BUILD_DEPS))
+	$(CTAGS) $(CTAGS_FLAGS) -f $(TAGS_TO_BUILD) $(CURDIR)
 endif
+
 
 usage:
 	@echo "Set the base directory: export PROJECT_ROOT_DIR=<location of makefile.include>"
@@ -493,15 +488,15 @@ usage:
 	@echo "    <$(CPP_TAGS_FILE)>"
 	@echo ""
 	@echo "        Compiler Options"
-	@echo "COMPILER: $(CPP)"
+	@echo "COMPILER: $(COMP)"
 	@echo ""
 	@echo "ADDITIONAL_INCLUDE_FLAGS:  Add extra include directories - (), <$(ADDITIONAL_INCLUDE_FLAGS)>"
-	@echo "ADDITIONAL_TEST_CPP_FLAGS: Add extra flags used when compiling test binaries - (), <$(ADDITIONAL_INCLUDE_FLAGS)>"
+	@echo "ADDITIONAL_TEST_COMP_FLAGS: Add extra flags used when compiling test binaries - (), <$(ADDITIONAL_INCLUDE_FLAGS)>"
 	@echo "ALL_WARNINGS               Set to NO to turn off warnings for questionable code - (YES), <$(ALL_WARNINGS)>"
 	@echo "CORE_SIZE                  Max allowed size of genereated core files - ($(DEFAULT_CORE_SIZE)), <$(CORE_SIZE)>"
 	@echo "CPPSTD:                    Set the C++ standard to be used by $(CPP) - ($(DEFAULT_CPPSTD)), <$(CPPSTD)>"
-	@echo "CPP_FLAGS:                 Flags passed to $(CPP) - (), <$(CPP_FLAGS)>" 
-	@echo "CPP_PROFILE_FLAGS          Flags used when profiling - ($(DEFAULT_CPP_PROFILE_FLAGS)), <$(CPP_PROFILE_FLAGS)>"
+	@echo "COMP_FLAGS:                 Flags passed to $(CPP) - (), <$(COMP_FLAGS)>" 
+	@echo "COMP_PROFILE_FLAGS          Flags used when profiling - ($(DEFAULT_COMP_PROFILE_FLAGS)), <$(COMP_PROFILE_FLAGS)>"
 	@echo "DEBUG_FLAGS:               Flags to $(CPP) when debugging is enabled - ($(DEFAULT_DEBUG_FLAGS)), <$(DEBUG_FLAGS)>"
 	@echo "DEBUG_ON:                  To disable debug symbols: export DEBUG_ON=FALSE - (YES), <$(DEBUG_ON)>"
 	@echo "FAST_FLAGS                 Flags to $(CPP)when fast build is enabled (Enable dangerous optimizations) -  ($(DEFAULT_FAST_FLAGS)), <$(FAST_FLAGS)>"

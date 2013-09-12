@@ -23,3 +23,5 @@ GEN_COVER:
 	codecov -prj "Project" -dpi $(EXPORT_COVER_DIR)/ProjectCoverage.dpi -spi $(EXPORT_COVER_DIR)/pgopti.spi
 	mv -f CODE_COVERAGE.HTML $(EXPORT_COVER_DIR)/CODE_COVERAGE.HTML
 	mv -f CodeCoverage/ $(EXPORT_COVER_DIR)/CodeCoverage
+
+DEFAULT_FORTRAN_STD=NOT_YET_SUPPORTED

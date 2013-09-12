@@ -1,6 +1,12 @@
-# Compiler
-ifndef CPP
+# LANGUAGE MODE
+ifndef SOURCE_EXTENSION
     $(error CPP must be specified!)
+endif
+
+
+# Compiler
+ifndef COMP
+    $(error COMP must be specified!)
 endif
 ifndef AR
     $(error AR must be specified!)
@@ -21,6 +27,9 @@ ifndef DEFAULT_CPP_PROFILE_FLAGS
 endif
 ifndef DEFAULT_CPPSTD
     $(error DEFAULT_CPPSTD must be specified!)
+endif
+ifndef DEFAULT_FORTRAN_STD
+    $(error DEFAULT_FORTRAN_STD must be specified!)
 endif
 
 # Specific flags

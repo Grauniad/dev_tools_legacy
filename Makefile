@@ -1,3 +1,4 @@
-MAKE_DIRS= CPP
+MAKE_DIRS= FORTRAN \
+           CPP 
 
 include ../makefile.include

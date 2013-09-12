@@ -1,0 +1,29 @@
+ifndef CPP
+    $(error CPP must be specified!)
+endif
+
+COMP=$(FORTRAN)
+SOURCE_EXTENSION=.f95
+
+FORTRAN_TAGS_TO_BUILD=
+
+#
+#  CONFIGURE TAGS
+#
+ifndef CTAGS
+    CTAGS=ctags
+endif
+
+ifndef
+    CTAGS_FLAGS=-R --sort=1 -fields=+iaS --extra=+q --language-force=fortran --tag-relative=no
+endif
+
+ifndef FORTRAN_STD
+    FORTRAN_STD=$(DEFAULT_FORTRAN_STD) #(overridden by USE_CPP11)
+endif
+
+STD=$(FORTRAN_STD)
+
+ifeq ($(findstring modclean,$(MAKECMDGOALS)),modclean)
+   FILES_TO_CLEAN+=$(shell ls $(EXPORT_INCLUDES_DIR)/*.mod 2> /dev/null)
+endif
