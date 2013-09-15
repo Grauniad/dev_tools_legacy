@@ -1,0 +1,6 @@
+TARGET_LIB=libMath
+CPP_TAGS_FILE=libMath_c++.tags
+
+MODE=CPP
+
+include ../../../../../makefile.include
