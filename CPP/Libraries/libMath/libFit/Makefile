@@ -11,5 +11,6 @@ LINKED_LIBS=libUtils \
 # REQUIRED FOR tokenizer
 
 USE_BOOST=YES
+USE_GSL=YES
 
 include ../makefile.libMath.include
