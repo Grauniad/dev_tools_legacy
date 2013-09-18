@@ -8,4 +8,8 @@ LINKED_LIBS=libUtils \
             libIOInterface
 
 
+# REQUIRED FOR tokenizer
+
+USE_BOOST=YES
+
 include ../makefile.libMath.include

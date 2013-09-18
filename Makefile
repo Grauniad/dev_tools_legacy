@@ -1,4 +1,5 @@
-MAKE_DIRS= Config \
+MAKE_DIRS= EXTERNAL_INCLUDES \
+           Config \
            FORTRAN \
            CPP 
 

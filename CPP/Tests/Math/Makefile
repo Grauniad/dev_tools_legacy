@@ -9,5 +9,6 @@ MODE=CPP
 TOOL_CHAIN=TRAVIS
 
 USE_GSL=YES
+USE_BOOST=YES
 
 include ../makefile_tests.include
