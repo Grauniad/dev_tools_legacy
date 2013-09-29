@@ -5,7 +5,7 @@ MODE=CPP
 TAGS_FILE=math_fit_c++.tags
 
 LINKED_LIBS=libUtils \
-            libIOInterface
+            libIOInterface 
 
 
 # REQUIRED FOR tokenizer
