@@ -1,3 +1,3 @@
-MAKE_DIRS= libFit libCombination libSet
+MAKE_DIRS= libFit libSet libCombination 
 
 include ../makefiles_libaries.include

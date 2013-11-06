@@ -1,5 +1,6 @@
 #include "tester.h"
 #include "combination.h"
+#include "multi_combination.h"
 
 using namespace std;
 
@@ -8,11 +9,23 @@ int CustomCombinations(testLogger& log );
 int Pairs(testLogger& log );
 int GetAdjoint(testLogger& log );
 
+int MultiCombForward(testLogger& log);
+int MultiCombBackward(testLogger& log);
+
 int main(void) {
+    /*
+     * Combinations
+     */
     Test("Checking basic combinations",Combinations).RunTest();
     Test("Checking custom combinations",CustomCombinations).RunTest();
     Test("Checking Pairs",Pairs).RunTest();
     Test("Checking Adjoint pair count", GetAdjoint).RunTest();
+
+    /*
+     * Full Permutations (range^count type problems)
+     */
+    Test("Checking forward iteration through complete permutation", MultiCombForward).RunTest();
+    Test("Checking backward iteration through complete permutation", MultiCombBackward).RunTest();
 }
 
 int Combinations(testLogger& log ) {
@@ -111,5 +124,121 @@ int GetAdjoint( testLogger& log ) {
     if ( s.Count() != 25 ) {
         return 1;
     }
+    return 0;
+}
+
+int MultiCombForward ( testLogger& log ) {
+
+    const int RANGE = 3;
+
+    MultiCombination set(RANGE,3);
+
+    short data[RANGE][RANGE][RANGE];
+
+    int i, j ,k;
+
+
+    // Initialise the test
+    for (i=0; i< RANGE; i++ ) {
+        for (j=0; j< RANGE; j++ ) {
+            for (k=0; k< RANGE; k++ ) {
+                data[i][j][k] = 0;
+            }
+        }
+    }
+
+    // Loop through everything
+    for ( bool OK = set.First(); OK; OK = set.Next() ) {
+        i = set.Set()[0];
+        j = set.Set()[1];
+        k = set.Set()[2];
+
+        data[i][j][k] += 1;
+
+        log << i << ", " << j << ", " << k << endl;
+    }
+
+    // Check we got each cell eactly once
+    // Initialise the test
+    for (i=0; i< RANGE; i++ ) {
+        for (j=0; j< RANGE; j++ ) {
+            for (k=0; k< RANGE; k++ ) {
+                if ( data[i][j][k] == 0 ) {
+                    log << "Didn't get combo: "
+                        << i << ", "
+                        << j << ", "
+                        << k << endl;
+                    return 1;
+                } else if (data[i][j][k] > 1) { 
+                    log << "Called to many times ("
+                        << data[i][j][k] << "): "
+                        << i << ", "
+                        << j << ", "
+                        << k << endl;
+                    return 1;
+
+                }
+            }
+        }
+    }
+
+    return 0;
+}
+
+int MultiCombBackward ( testLogger& log ) {
+
+    const int RANGE = 3;
+
+    MultiCombination set(RANGE,3);
+
+    short data[RANGE][RANGE][RANGE];
+
+    int i, j ,k;
+
+
+    // Initialise the test
+    for (i=0; i< RANGE; i++ ) {
+        for (j=0; j< RANGE; j++ ) {
+            for (k=0; k< RANGE; k++ ) {
+                data[i][j][k] = 0;
+            }
+        }
+    }
+
+    // Loop through everything
+    for ( bool OK = set.Last(); OK; OK = set.Prev() ) {
+        i = set.Set()[0];
+        j = set.Set()[1];
+        k = set.Set()[2];
+
+        data[i][j][k] += 1;
+
+        log << i << ", " << j << ", " << k << endl;
+    }
+
+    // Check we got each cell eactly once
+    // Initialise the test
+    for (i=0; i< RANGE; i++ ) {
+        for (j=0; j< RANGE; j++ ) {
+            for (k=0; k< RANGE; k++ ) {
+                if ( data[i][j][k] == 0 ) {
+                    log << "Didn't get combo: "
+                        << i << ", "
+                        << j << ", "
+                        << k << endl;
+                    return 1;
+                } else if (data[i][j][k] > 1) { 
+                    log << "Called to many times ("
+                        << data[i][j][k] << "): "
+                        << i << ", "
+                        << j << ", "
+                        << k << endl;
+                    return 1;
+
+                }
+            }
+        }
+    }
+
     return 0;
 }
