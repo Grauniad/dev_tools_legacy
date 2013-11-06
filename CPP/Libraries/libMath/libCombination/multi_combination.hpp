@@ -1,6 +1,7 @@
 #include "multi_combination.h"
 
-MultiCombination::MultiCombination(size_t range, size_t len) {
+template<class IntType>
+MultiCombination<IntType>::MultiCombination(IntType range, IntType len) {
     this->range = range;
     this->len = len;
 
@@ -9,21 +10,24 @@ MultiCombination::MultiCombination(size_t range, size_t len) {
 
 }
 
-bool MultiCombination::First ( ) {
-    for ( size_t& i : values ) {
+template<class IntType>
+bool MultiCombination<IntType>::First ( ) {
+    for ( IntType& i : values ) {
         i = 0;
     }
     return true;
 }
 
-bool MultiCombination::Last ( ) {
-    for ( size_t& i : values ) {
+template<class IntType>
+bool MultiCombination<IntType>::Last ( ) {
+    for ( IntType& i : values ) {
         i = range-1;
     }
     return true;
 }
 
-bool MultiCombination::Next ( ) {
+template<class IntType>
+bool MultiCombination<IntType>::Next ( ) {
     // Look for the first non-max item
     short incrIdx = -1;
     for ( int i =len-1; i >= 0; i-- ) {
@@ -39,7 +43,7 @@ bool MultiCombination::Next ( ) {
         values[incrIdx]++;
 
         // Everything else must be reset to 0
-        for ( size_t i = incrIdx+1; i< len; i++ ) {
+        for ( IntType i = incrIdx+1; i< len; i++ ) {
             values[i] = 0;
         }
         
@@ -50,7 +54,8 @@ bool MultiCombination::Next ( ) {
     }
 }
 
-bool MultiCombination::Prev ( ) {
+template<class IntType>
+bool MultiCombination<IntType>::Prev ( ) {
     // Look for the first non-zero item
     short decrIdx = -1;
     for ( int i =len-1; i >= 0; i-- ) {
@@ -66,7 +71,7 @@ bool MultiCombination::Prev ( ) {
         values[decrIdx]--;
 
         // Everything else must be reset to MAX
-        for ( size_t i = decrIdx+1; i< len; i++ ) {
+        for ( IntType i = decrIdx+1; i< len; i++ ) {
             values[i] = range-1;
         }
         

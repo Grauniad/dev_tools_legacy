@@ -131,7 +131,7 @@ int MultiCombForward ( testLogger& log ) {
 
     const int RANGE = 3;
 
-    MultiCombination set(RANGE,3);
+    MultiCombination<int> set(RANGE,3);
 
     short data[RANGE][RANGE][RANGE];
 
@@ -189,7 +189,7 @@ int MultiCombBackward ( testLogger& log ) {
 
     const int RANGE = 3;
 
-    MultiCombination set(RANGE,3);
+    MultiCombination<int> set(RANGE,3);
 
     short data[RANGE][RANGE][RANGE];
 

@@ -26,24 +26,27 @@
  * etc
  */
 
+template<class IntType = size_t>
 class MultiCombination {
 public:
-    MultiCombination(size_t range, size_t len);
+    MultiCombination(IntType range, IntType len);
 
     bool Next();
     bool Prev();
     bool First();
     bool Last();
 
-    const std::vector<size_t>& Set() {
+    const std::vector<IntType>& Set() {
         return values;
     }
 
 
 private:
-    size_t range;
-    size_t len;
+    IntType range;
+    IntType len;
 
-    std::vector<size_t> values;
+    std::vector<IntType> values;
 };
+
+#include "multi_combination.hpp"
 #endif
