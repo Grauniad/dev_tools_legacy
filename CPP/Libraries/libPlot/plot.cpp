@@ -5,24 +5,42 @@ using namespace std;
 using namespace Plot;
 
 namespace {
+    static bool initialised = false;
+
     void PlotInit(const Plot_2D& params) {
-        const char* plargv[] = { "plotter",  /* argv0 dummy */
-                                  "-o",   params.fname.c_str(), 
-                                  "-dev", params.device.c_str()
-                               };
-        int plargc = 5;
 
-        // Setup the device
-        plparseopts(&plargc, plargv, PL_PARSE_FULL);
+        if ( !initialised) {
+            const char* plargv[] = { "plotter",  /* argv0 dummy */
+                                      "-o",   params.fname.c_str(), 
+                                      "-dev", params.device.c_str(),
+                                      "-mar", "0.04",
+                                      "-freeaspect"
+                                   };
+            int plargc = 8;
 
-        // Start the plot
-        plinit();
+            // Setup the device
+            plparseopts(&plargc, plargv, PL_PARSE_FULL);
 
-        // Setup the page
-        plenv( params.xmin, params.xmax, 
-               params.ymin, params.ymax, 
-               params.forceSquare, 
-               params.axis);
+            // Start the plot
+            plinit();
+
+            // Setup the page
+            plenv( params.xmin, params.xmax, 
+                   params.ymin, params.ymax, 
+                   params.forceSquare? 1 : 0, 
+                   params.axis);
+
+            pllab( params.xlabel.c_str(), 
+                   params.ylabel.c_str(), 
+                   params.title.c_str());
+            initialised = true;
+        }
+    }
+    void PlotDone () {
+        if ( initialised) {
+            plend();
+            initialised = false;
+        }
     }
 }
 
@@ -31,11 +49,20 @@ Plot::Plot_2D::Plot_2D( double _xmin, double _xmax,
                                 string _fname,
                                 string _device,
                                 bool   _forceSquare,
-                                AXIS_STYLE _axis)
+                                AXIS_STYLE _axis,
+                                std::string _xlabel,
+                                std::string _ylabel,
+                                std::string _title)
     : xmin(_xmin), xmax(_xmax), ymin(_ymin), ymax(_ymax),
       fname(_fname), device(_device),
       forceSquare(_forceSquare),
-      axis(_axis)
+      axis(_axis),
+      xlabel(_xlabel), ylabel(_ylabel), title(_title)
+{
+}
+
+Plot::Data_1D::Data_1D( double* _x, double* _y, int _n):
+                        x(_x), y(_y), n(_n)
 {
 }
 
@@ -65,6 +92,12 @@ PLcGrid* Plot::Data_2D::Grid() {
 Plot::Data_2D::~Data_2D() {
     delete [] gridMap.xg;
     delete [] gridMap.yg;
+}
+
+void Plot::Line(const Plot_2D& config, Data_1D& data) {
+    PlotInit(config);
+
+    plline(data.N(), data.X(), data.Y());
 }
 
 void Plot::HeatMap(const Plot_2D& config, Data_2D& data) {
@@ -114,6 +147,8 @@ void Plot::HeatMap(const Plot_2D& config, Data_2D& data) {
              fillFunc,  
              rectangular_grid, mapFunc, userData);
 
+}
 
-
+void Plot::Done() {
+    PlotDone();
 }

@@ -7,6 +7,7 @@
 int CheckMinMax(testLogger& log);
 int CheckFill(testLogger& log);
 int PlotTest (testLogger& log);
+int PlotLine (testLogger& log);
 
 using namespace std;
 using namespace Plot;
@@ -17,10 +18,39 @@ int main (int argc, char**argv) {
     Test("Checking MinMax2D...", CheckMinMax).RunTest();
     Test("Checking Fill...", CheckFill).RunTest();
     Test("Making something pretty...", PlotTest).RunTest();
+    Test("Making a line...", PlotLine).RunTest();
 
     /*
      * All seems good...lets plot!
      */
+    return 0;
+}
+
+int PlotLine ( testLogger& log ) {
+    Plot_2D plot_config;
+    plot_config.xmin = 0;
+    plot_config.ymin = 0;
+    plot_config.xmax = 10;
+    plot_config.ymax = 100;
+    plot_config.fname = "plot2.svg";
+    plot_config.xlabel = "Hello World2 !";
+    plot_config.ylabel = "Hello World!";
+    plot_config.title = "Hello World!";
+
+    const int NUM = 500;
+    double xstep = 10.0/NUM;
+
+    double x[NUM], y[NUM];
+    for ( int i =0; i< NUM; i++ ) {
+        x[i] = 1 + i*xstep;
+        y[i] = x[i]*x[i];
+        log << x[i] << y[i] << endl;
+    }
+
+    Data_1D plot_data(x, y, NUM);
+    Line(plot_config, plot_data);
+    Done();
+
     return 0;
 }
 
@@ -40,6 +70,7 @@ int PlotTest (testLogger& log) {
     Data_2D plot_data(data,10,10, plot_config);
 
     HeatMap(plot_config, plot_data);
+    Done();
 
     /*
      * Clean up

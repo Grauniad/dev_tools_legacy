@@ -24,10 +24,13 @@ namespace Plot {
                  double _xmax=1,
                  double _ymin=0, 
                  double _ymax=1,
-                 std::string _fname="plot.ps",
-                 std::string _device="psc",
+                 std::string _fname="plot.svg",
+                 std::string _device="svg",
                  bool   _forceSquare = false,
-                 AXIS_STYLE _axis = BOX_AND_VALUES);
+                 AXIS_STYLE _axis = BOX_AND_VALUES,
+                 std::string _xlabel = "",
+                 std::string _ylabel = "",
+                 std::string _title = "");
 
         double         xmin;
         double         xmax;
@@ -37,6 +40,30 @@ namespace Plot {
         std::string    device;
         bool           forceSquare; // Scale x & Y the same?
         AXIS_STYLE     axis;
+        std::string    xlabel;
+        std::string    ylabel;
+        std::string    title;
+    };
+
+    class Data_1D {
+    public:
+        Data_1D( double* _x, double* _y, int _n );
+
+        double* X() {
+            return x;
+        }
+
+        double* Y() {
+            return y;
+        }
+
+        int N() {
+            return n;
+        }
+    private:
+        double* x;
+        double* y;
+        int n;
     };
 
     class Data_2D {
@@ -61,7 +88,9 @@ namespace Plot {
         int ny;
     };
 
+    void Line(const Plot_2D& config, Data_1D& data);
     void HeatMap(const Plot_2D& config, Data_2D& data);
+    void Done();
 }
 
 #endif
