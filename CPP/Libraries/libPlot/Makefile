@@ -3,6 +3,8 @@ SOURCES=$(shell echo *.cpp)
 
 TARGET_LIB=libPlot
 
+LINKED_LIBS=libMath
+
 MODE=CPP
 TAGS_FILE=utilities_Plot_c++.tags
 

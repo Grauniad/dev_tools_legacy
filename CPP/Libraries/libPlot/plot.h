@@ -2,6 +2,7 @@
 #define DEVTOOLS_CPP_LIBRARIES_PLOT_H
 
 #include <string>
+#include  "plplot/plplot.h"
 
 namespace Plot {
 
@@ -38,7 +39,29 @@ namespace Plot {
         AXIS_STYLE     axis;
     };
 
-    void HeatMap(const Plot_2D& config, double** data);
+    class Data_2D {
+    public:
+        Data_2D(double** _data, int _nx, int _ny, const Plot_2D& config);
+
+        virtual ~Data_2D();
+
+        double** Data() {
+            return data;
+        }
+
+        int NX() { return nx; }
+        int NY() { return ny; }
+
+        PLcGrid* Grid();
+
+    private:
+        PLcGrid gridMap;
+        double** data;
+        int nx;
+        int ny;
+    };
+
+    void HeatMap(const Plot_2D& config, Data_2D& data);
 }
 
 #endif

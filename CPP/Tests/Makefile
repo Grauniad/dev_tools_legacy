@@ -5,7 +5,8 @@ MAKE_DIRS= IOInterface\
 		   Utils \
 		   csv \
 		   Math  \
-		   Threads
+		   Threads \
+		   plot
 
 
 include ../../../makefile.include
