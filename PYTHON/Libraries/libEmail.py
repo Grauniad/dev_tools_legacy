@@ -3,6 +3,8 @@
 import smtplib
 
 import email.mime.text
+import email.mime.multipart
+import email.mime.image
 
 import copy
 
@@ -82,4 +84,18 @@ class HtmlMsg(Email):
       # Generate an html message
       #
       Email.__init__(self,email.mime.text.MIMEText(html,"html"))
+
+class MultiPart(Email):
+    def __init__(self):
+        Email.__init__(self,email.mime.multipart.MIMEMultipart("related"))
+        self.msg.preamble = "This is a multi-part message in MIME format"
+    def AttachMsg(self,msg):
+        self.msg.attach(msg.msg)
+    def AttachImage(self,partId,fname):
+        fp = open(fname)
+        image = email.mime.image.MIMEImage(fp.read())
+        fp.close()
+        image.add_header("Content-ID","<" + partId + ">")
+        self.msg.attach(image)
+
 
