@@ -2,6 +2,7 @@ MAKE_DIRS= libIOInterface\
 		   libThread \
 		   libUtils \
 		   libTest \
-		   libMath 
+		   libMath  \
+		   libPlot
 
 include ../../../makefile.include
