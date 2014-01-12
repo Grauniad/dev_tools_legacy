@@ -7,5 +7,7 @@ MAKE_DIRS= IOInterface\
 		   Math  \
 		   plot
 
+MODE=CPP
+
 
 include ../../../makefile.include

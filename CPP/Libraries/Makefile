@@ -4,4 +4,6 @@ MAKE_DIRS= libIOInterface\
 		   libMath  \
 		   libPlot
 
+MODE=CPP
+
 include ../../../makefile.include
