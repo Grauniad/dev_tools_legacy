@@ -11,4 +11,6 @@ MODE=CPP
 USE_GSL=YES
 USE_BOOST=YES
 
+NO_INTEL=YES
+
 include ../makefile_tests.include

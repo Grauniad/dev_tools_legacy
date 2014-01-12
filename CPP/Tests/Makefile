@@ -5,7 +5,6 @@ MAKE_DIRS= IOInterface\
 		   Utils \
 		   csv \
 		   Math  \
-		   Threads \
 		   plot
 
 

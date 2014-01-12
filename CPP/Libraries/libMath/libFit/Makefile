@@ -13,4 +13,7 @@ LINKED_LIBS=libUtils \
 USE_BOOST=YES
 USE_GSL=YES
 
+# Preventing intel due to lack of csv support
+NO_INTEL=YES
+
 include ../makefile.libMath.include
