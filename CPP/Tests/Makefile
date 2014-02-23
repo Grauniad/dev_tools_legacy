@@ -5,6 +5,7 @@ MAKE_DIRS= IOInterface\
 		   Utils \
 		   csv \
 		   Math  \
+		   Set   \
 		   plot
 
 MODE=CPP
