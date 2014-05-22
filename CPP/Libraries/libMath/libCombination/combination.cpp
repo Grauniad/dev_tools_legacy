@@ -15,7 +15,7 @@ Subsets Combination::AllCombinations(size_t n, size_t groupSize)
     } while(gsl_combination_next(comb) == GSL_SUCCESS);
 
     if ( Logger::Instance().LogEnabled(LOG_VERY_VERBOSE)) {
-        stringstream& msg = LogFactory::Buf();
+        stringstream msg;
         msg << "Returning all groups of size " << groupSize;
         msg << " from a set of size " << n;
         msg << endl;
@@ -47,7 +47,7 @@ Subsets Combination::AllCombinations(vector<size_t> data, size_t groupSize)
     }
 
     if ( Logger::Instance().LogEnabled(LOG_VERY_VERBOSE)) {
-        stringstream& msg = LogFactory::Buf();
+        stringstream msg;
         msg << "Returning all groups of size " << groupSize << " from: ";
         msg << endl;
         for (size_t& i : data) {
