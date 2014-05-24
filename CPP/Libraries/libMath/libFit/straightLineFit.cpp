@@ -5,7 +5,7 @@
 StraightLineFit::StraightLineFit(double *x, double *y, size_t n): m(1), c(1), sumq(0) {
     double tmp[2][2];
     IF_LOG( LOG_VERY_VERBOSE, 
-        std::stringstream& s = LogFactory::Buf();
+        std::stringstream s;
         s << "Fitting data for " << n << " data points: " << endl;
         for ( size_t i=0; i< n; i++ ) {
             s << x[i] << ", " << y[i] << endl;
