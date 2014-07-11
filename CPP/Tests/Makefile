@@ -7,7 +7,9 @@ MAKE_DIRS= IOInterface\
 		   Math  \
 		   Set   \
 		   plot \
-		   commands
+		   commands \
+		   regex \
+		   strings 
 
 MODE=CPP
 
