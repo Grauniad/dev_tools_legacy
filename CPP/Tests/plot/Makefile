@@ -11,6 +11,7 @@ USE_PLPLOT=YES
 CORE_SIZE=unlimited
 
 MODE=CPP
+NO_TRAVIS=YES
 
 
 include ../makefile_tests.include
