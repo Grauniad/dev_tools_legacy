@@ -21,7 +21,7 @@ void DummyCefAppHandlers::OnContextInitialized() {
 
     // Information used when creating the native window.
     CefWindowInfo window_info;
-    window_info.SetAsWindowless(0,false);
+    window_info.SetAsWindowless(0);
 
     // SimpleHandler implements browser-level callbacks.
     std::shared_ptr<DummyCefClient> handler(new DummyCefClient);

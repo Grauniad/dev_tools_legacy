@@ -6,7 +6,8 @@
 
 class DummyCefAppHandlers:
         public CefBrowserProcessHandler,
-        public CefRenderProcessHandler {
+        public CefRenderProcessHandler
+{
 public:
     DummyCefAppHandlers();
 
@@ -53,7 +54,7 @@ private:
     std::vector<std::unique_ptr<CefTestBase>> tests;
     static bool exitClean;
 
-IMPLEMENT_REFCOUNTING(DummyCefAppHandlers);
+	IMPLEMENT_REFCOUNTING(DummyCefAppHandlers);
 };
 
 #endif

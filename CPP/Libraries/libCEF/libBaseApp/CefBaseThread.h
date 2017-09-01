@@ -45,7 +45,8 @@
  *          }
  *
  */
-class CefBaseThread {
+class CefBaseThread: public CefBaseRefCounted
+{
 public:
     virtual ~CefBaseThread() { }
 
@@ -88,7 +89,7 @@ protected:
     virtual void DoWork() = 0;
 
     template<class RET_TYPE, class Function>
-    class Work
+    class Work: public CefBaseRefCounted
     {
     public:
         Work(Function&& f): func(f) { }
@@ -129,6 +130,7 @@ private:
     CefBaseWorkerThread(const CefBaseWorkerThread& rhs) = delete;
 
     F function;
+	IMPLEMENT_REFCOUNTING(CefBaseWorkerThread<F>);
 };
 
 /**

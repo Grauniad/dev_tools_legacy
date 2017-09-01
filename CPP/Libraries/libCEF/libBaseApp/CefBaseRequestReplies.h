@@ -53,7 +53,7 @@ protected:
     CefRefPtr<CefBrowser> Browser();
 };
 
-class CefBaseJSRequestReplyHandler: public CefMessageRouterBrowserSide::Handler
+class CefBaseJSRequestReplyHandler: public CefMessageRouterBrowserSide::Handler, public CefBaseRefCounted
 {
 public:
     CefBaseJSRequestReplyHandler() { }

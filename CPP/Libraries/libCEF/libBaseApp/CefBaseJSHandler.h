@@ -11,6 +11,8 @@
 #include "CefBaseJSMessageRouter.h"
 #include <CefBaseApp.h>
 #include <CEFJSUtils.h>
+#include "include/cef_browser.h"
+#include "include/cef_base.h"
 
 /*
  * External interface for the java-script library.
@@ -18,7 +20,7 @@
  * All callbacks from the browser / renderer handlers will go via here, and then
  * fan out into any child-classes as required.
  */
-class CefBaseJSHandler {
+class CefBaseJSHandler: public virtual CefBaseRefCounted {
 public:
 
     /**

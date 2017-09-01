@@ -525,10 +525,13 @@ ifeq ($(LINK_CEF_RESOURCES),YES)
     FILES_TO_SYM_LINK+=$(CEF_LIBS)/libcef.so*
     FILES_TO_SYM_LINK+=$(CEF_LIBS)/libffmpegsumo.so*
     FILES_TO_SYM_LINK+=$(CEF_LIBS)/libpdf.so*
+    FILES_TO_SYM_LINK+=$(CEF_LIBS)/natives_blob.bin
+    FILES_TO_SYM_LINK+=$(CEF_LIBS)/snapshot_blob.bin
     FILES_TO_SYM_LINK+=$(CEF_RESOURCES)/cef_100_percent.pak
     FILES_TO_SYM_LINK+=$(CEF_RESOURCES)/cef_200_percent.pak
     FILES_TO_SYM_LINK+=$(CEF_RESOURCES)/cef.pak 
     FILES_TO_SYM_LINK+=$(CEF_RESOURCES)/devtools_resources.pak
+    FILES_TO_SYM_LINK+=$(CEF_RESOURCES)/cef_extensions.pak
     FILES_TO_SYM_LINK+=$(CEF_RESOURCES)/icudtl.dat
 endif
 
@@ -539,10 +542,13 @@ ifeq ($(TEST_LINK_CEF_RESOURCES),YES)
     TEST_FILES_TO_SYM_LINK+=$(CEF_LIBS)/libcef.so*
     TEST_FILES_TO_SYM_LINK+=$(CEF_LIBS)/libffmpegsumo.so*
     TEST_FILES_TO_SYM_LINK+=$(CEF_LIBS)/libpdf.so*
+    TEST_FILES_TO_SYM_LINK+=$(CEF_LIBS)/natives_blob.bin
+    TEST_FILES_TO_SYM_LINK+=$(CEF_LIBS)/snapshot_blob.bin
     TEST_FILES_TO_SYM_LINK+=$(CEF_RESOURCES)/cef_100_percent.pak
     TEST_FILES_TO_SYM_LINK+=$(CEF_RESOURCES)/cef_200_percent.pak
     TEST_FILES_TO_SYM_LINK+=$(CEF_RESOURCES)/cef.pak 
     TEST_FILES_TO_SYM_LINK+=$(CEF_RESOURCES)/devtools_resources.pak
+    TEST_FILES_TO_SYM_LINK+=$(CEF_RESOURCES)/cef_extensions.pak
     TEST_FILES_TO_SYM_LINK+=$(CEF_RESOURCES)/icudtl.dat
 endif
 ###################################################################
@@ -594,7 +600,7 @@ endif
 ifeq ($(USE_CEF),YES)
 
     INCLUDE_FLAGS+=-I$(CEF_DIR)
-    EXTERNAL_LIBS+=-L$(CEF_LIBS) $(CEF_LIBS)/obj.target/libcef_dll_wrapper.a -lcef 
+    EXTERNAL_LIBS+=-L$(CEF_LIBS) $(CEF_LIBS)/libcef_dll_wrapper.a -lcef 
 endif
 
 #

@@ -10,7 +10,7 @@
 //TODO: Investigate performance of default getters / setters to see if we want
 //      to provide a custom one
 CEFJSObject::CEFJSObject()
-    : object(CefV8Value::CreateObject(nullptr))
+    : object(CefV8Value::CreateObject(nullptr, nullptr))
 {
 }
 

@@ -56,7 +56,7 @@ void CefTestContext::ExecuteCleanJS(
         CefRefPtr<CefV8Value> jsResult;
         CefRefPtr<CefV8Exception> jsError;
 
-        bool ok = context_->Eval(js,jsResult,jsError);
+        bool ok = context_->Eval(js,"", 0, jsResult,jsError);
 
         if ( ok )
         {
